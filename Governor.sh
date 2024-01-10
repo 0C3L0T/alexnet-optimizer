@@ -1,3 +1,5 @@
+#!/bin/bash
+
 #Instructions to Run
 # On Your Computer: adb push Governor.sh /data/local/Working_dir
 # On the Board: chmod +x Governor.sh && ./Governor.sh graph_alexnet_all_pipe_sync #NumberOFPartitions #TargetFPS #TargetLatency
@@ -44,34 +46,34 @@ StageThreeInferenceTime=0
 ######## Return 1 if constaraints on FPS and Latency are satisfied ################
 
 ParseResults(){
-	
+
 	LatencyCondition=0
 	FPSCondition=0
-		
+
 	FPS=`awk -F'[ :]' '/Frame rate is:/{FPS=$(NF-1)} /Test passed/{print FPS}' OFS=, output.txt`
 	FPS=$( printf "%0.f" $FPS )
-	
-	
+
+
 	Latency=`awk -F'[ :]' '/Frame latency is:/{Latency=$(NF-1)} /Test passed/{print Latency}' OFS=, output.txt`
 	Latency=$( printf "%0.f" $Latency )
-	
+
 	printf "\n"
 	printf "Throughput is: %s\n" "$FPS"
 	printf "Latency is: %s\n" "$Latency"
-	
+
 	StageOneInferenceTime=`awk -F'[ :]' '/stage1_inference_time:/{t=$(NF-1)} /Test passed/{print t}' OFS=, output.txt`
 	StageOneInferenceTime=$( printf "%0.f" $StageOneInferenceTime)
-	
-	
+
+
 	StageTwoInferenceTime=`awk -F'[ :]' '/stage2_inference_time:/{t=$(NF-1)} /Test passed/{print t}' OFS=, output.txt`
 	StageTwoInferenceTime=$( printf "%0.f" $StageTwoInferenceTime)
-	
-	
+
+
 	StageThreeInferenceTime=`awk -F'[ :]' '/stage3_inference_time:/{t=$(NF-1)} /Test passed/{print t}' OFS=, output.txt`
 	StageThreeInferenceTime=$( printf "%0.f" $StageThreeInferenceTime)
-	
-	
-	
+
+
+
 	if [ $Latency -le $Target_Latency ]; then
 	    LatencyCondition=1; #Latency requirement was met.
 	fi
@@ -80,7 +82,7 @@ ParseResults(){
 	    FPSCondition=1; #FPS requirement was met.
 	fi
 
-	
+
 }
 
 
@@ -93,15 +95,15 @@ N_Frames=10
 ((PartitionPoint2=partitions/2))
 Order="L-G-B"
 while : ; do
-	
+
 	./$graph --threads=4  --threads2=2  --target=NEON --n=$N_Frames --partition_point=$PartitionPoint1 --partition_point2=$PartitionPoint2 --order=$Order > output.txt
 	ParseResults
 	if [ "$FPSCondition" = 1 ] && [ "$LatencyCondition" = 1 ] #Both Latency and Throughput Requirements are Met.
 	then
 		printf "Solution Was Found.\n TargetBigFrequency:%s \t TargetLittleFrequency:%s \t PartitionPoint1:%s \t PartitionPoint2:%s \t Order:%s \n" "${BigFrequencyTable[$BigFrequencyCounter]}" "${LittleFrequencyTable[$LittleFrequencyCounter]}" "${PartitionPoint1}" "${PartitionPoint2}" "$Order"
-		break;	
-	fi	
-	
+		break;
+	fi
+
 	printf "Target Perfromance Not Satisfied\n\n"
 
 	if [ LittleFrequencyCounter -lt MaxLittleFrequencyCounter ];
@@ -129,7 +131,7 @@ while : ; do
 					echo "No Solution Found"
 					break
 				fi
-				
+
 			else
 				if [ PartitionPoint1 -gt 1 ];
 				then
@@ -140,10 +142,10 @@ while : ; do
 					echo "No Solution Found"
 					break
 				fi
-			fi		
+			fi
 		fi
 	fi
-	
+
 done
 
 
