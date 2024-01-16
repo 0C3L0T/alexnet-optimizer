@@ -3,6 +3,7 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <array>
 #include "parse_results.h"
 using namespace std;
 
@@ -12,6 +13,7 @@ int BigFrequencyTable[] = {500000, 667000, 1000000, 1200000, 1398000, 1512000, 1
 int main(int argc, char *argv[])
 {
     string Command = "";
+    printf("starting program\n");
 
     /* Checking if processor is available */
     if (system(NULL))
@@ -38,7 +40,7 @@ int main(int argc, char *argv[])
     char Run_Command[150];
     std::array<std::string, 3> orders = {"L-G-B", "B-L-G", "G-B-L"};
     for(const auto& order : orders) {
-        sprintf(Run_Command, "./graph_alexnet_all_pipe_sync --threads=4  --threads2=2 --n=60 --total_cores=6 --partition_point=8 --partition_point2=8 --order=%s > output.txt", order);
+        sprintf(Run_Command, "./graph_alexnet_all_pipe_sync --threads=4  --threads2=2 --n=60 --total_cores=6 --partition_point=8 --partition_point2=8 --order=%s &> /data/local/Working_dir/output.txt", order.c_str());
         system(Run_Command);
         ParseResults();
     }
