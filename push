@@ -1,0 +1,6 @@
+#!/bin/bash
+
+adb push "$1" /data/local/Working_dir/
+echo "pushed governor to board, now chmodding"
+adb shell chmod +x /data/local/Working_dir/"$1"
+echo "done"

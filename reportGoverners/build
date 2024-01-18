@@ -8,4 +8,4 @@
 # Target_Compiler=armv7a-linux-androideabi23-clang++
 Compiler=arm-linux-androideabi-clang++
 # cp ${Bin_Dir}/${Target_Compiler} ${Bin_Dir}/${Compiler}
-$Compiler -static-libstdc++ "${@:1}" -o governor
+$Compiler -static-libstdc++ "${@:1}" -o ../governor
