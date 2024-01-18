@@ -42,7 +42,7 @@ int main(int argc, char *argv[])
     char Run_Command[150];
     std::array<std::string, 3> orders = {"L-G-B", "B-L-G", "G-B-L"};
     for(const auto& order : orders) {
-        sprintf(Run_Command, "./graph_alexnet_all_pipe_sync --threads=4  --threads2=2 --n=60 --total_cores=6 --partition_point=8 --partition_point2=8 --order=%s &> /data/local/Working_dir/output.txt", order.c_str());
+        sprintf(Run_Command, "./graph_alexnet_all_pipe_sync --threads=4  --threads2=2 --n=60 --total_cores=6 --partition_point=8 --partition_point2=8 --order=G-B-L &> /data/local/Working_dir/output.txt", order.c_str());
         system(Run_Command);
         ParseResults();
     }

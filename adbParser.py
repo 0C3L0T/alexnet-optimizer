@@ -30,7 +30,7 @@ def adb_shell_listener():
                 print(result)
 
                 # write the output and timestamp to a file
-                with open("governor_output.txt", "a") as f:
+                with open("adb_output.txt", "a") as f:
                     f.write(result)
 
     except KeyboardInterrupt:
