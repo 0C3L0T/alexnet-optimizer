@@ -30,6 +30,9 @@ int main(int argc, char *argv[])
     /* Setup Performance Governor (CPU) */
     system("echo performance > /sys/devices/system/cpu/cpufreq/policy0/scaling_governor");
     system("echo performance > /sys/devices/system/cpu/cpufreq/policy2/scaling_governor");
+    system("echo 1 > /sys/class/fan/enable");
+    system("echo 0 > /sys/class/fan/mode");
+    system("echo 4 > /sys/class/fan/level");
 
     /* Initialize Little and Big CPU with Lowest Frequency */
     Command = "echo " + to_string(LittleFrequencyTable[0]) + " > /sys/devices/system/cpu/cpufreq/policy0/scaling_max_freq";
