@@ -4,7 +4,7 @@
 #include <fstream>
 #include <sstream>
 #include <array>
-#include "parse_results.h"
+#include "../parse_results.h"
 using namespace std;
 
 int LittleFrequencyTable[] = {500000, 667000, 1000000, 1200000, 1398000, 1512000, 1608000, 1704000, 1800000};
@@ -13,11 +13,13 @@ int BigFrequencyTable[] = {500000, 667000, 1000000, 1200000, 1398000, 1512000, 1
 int main(int argc, char *argv[])
 {
     string Command = "";
-    printf("starting program\n");
+    cout << "starting program" << endl;
+
 
     /* Checking if processor is available */
     if (system(NULL))
-        puts("Ok");
+        cout << "Ok" << endl;
+
     else
         exit(EXIT_FAILURE);
 

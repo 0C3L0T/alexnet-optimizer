@@ -49,7 +49,8 @@ void ParseResults()
                 /* Checking the given word is float or not */
                 if (stringstream(temp) >> FPS)
                 {
-                    printf("Throughput is: %f FPS\n", FPS);
+                    printf("Throughput is: %f FPS", FPS);
+                    cout << endl;
                     break;
 
                 }
@@ -68,7 +69,8 @@ void ParseResults()
                 /* Checking the given word is float or not */
                 if (stringstream(temp) >> Latency)
                 {
-                    printf("Latency is: %f ms\n", Latency);
+                    printf("Latency is: %f ms", Latency);
+                    cout << endl;
                     break;
                 }
                 temp = "";
