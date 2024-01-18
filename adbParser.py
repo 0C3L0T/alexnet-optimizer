@@ -3,10 +3,13 @@ import time
 
 def adb_shell_listener():
     # Make sure testGovernor exists on the device
-    adb_command = "adb shell ./testGovernor"
+    adb_command = "adb shell"
 
     # Open a subprocess to communicate with ADB shell
     process = subprocess.Popen(adb_command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE, text=True)
+
+    subprocess.stdin.write("cd /data/local/Working_dir\n")
+    subprocess.stdin.write("./testGovernor\n")
 
     try:
         while True:

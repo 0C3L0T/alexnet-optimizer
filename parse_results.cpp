@@ -31,7 +31,7 @@ void ParseResults()
 {
     float FPS;
     float Latency;
-    ifstream myfile("output.txt");
+    ifstream myfile("/data/local/Working_dir/output.txt");
     cout << endl;
     /* Read Output.txt File and Extract Data */
     for (std::string line; getline(myfile, line);)
