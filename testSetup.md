@@ -16,6 +16,12 @@ we moeten een manier bedenken om de measurements af te stemmen op de tests.
 
 **Run de tests via python**
 
+./governor ./graph_alexnet_all_pipe_sync --threads=4 --threads2=2 --n=60 --total_cores=6 --partition_point=3 --partition_point2=5 --order=G-L-B
+
+run CNN on Big, Little at all power frequencies, also gpu
+all possible hardware orders x all layers
+GPU has to work with BIG CPU
+
 ## Shrinking of the search space
 
 Are there knobs that we can turn that result in good performance independent of other factors?
