@@ -20,7 +20,7 @@ def arduino_listener():
     
             [curr_V, curr_mA, power_mW] = data
 
-            timestamp = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
+            timestamp = time.time()
 
             result = f"[{timestamp}] Voltage: {curr_V}V, Current: {curr_mA}mA, Power: {power_mW}mW\n"
             print(result)
