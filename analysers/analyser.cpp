@@ -44,6 +44,12 @@ void runCNN(int partition_point, int partition_point2, const std::string& order)
     system(Run_Command);
 }
 
+void printFreq(int littleFreq, int bigFreq, int gpuOn) {
+    cout << "Little Frequency: " << to_string(littleFreq) << ", ";
+    cout << "Big Frequency: " << to_string(bigFreq) << ", ";
+    cout << "GPU On: " << to_string(gpuOn) << ", ";
+}
+
 int main(int argc, char *argv[])
 {
     string Command = "";
@@ -67,6 +73,7 @@ int main(int argc, char *argv[])
     for(int i = 0; i < 9; i++) {
         initLittleWithFreq(i);
         runCNN(8, 8, "L-G-B");
+        printFreq(LittleFrequencyTable[i], 0, 0);
         ParseResults();
     }
 
@@ -74,6 +81,7 @@ int main(int argc, char *argv[])
     for(int i = 0; i < 13; i++) {
         initBigWithFreq(i);
         runCNN(8, 8, "B-L-G");
+        printFreq(0, BigFrequencyTable[i], 0);
         ParseResults();
     }
 
@@ -81,6 +89,7 @@ int main(int argc, char *argv[])
     for(int i = 0; i < 13; i++) {
         initBigWithFreq(i);
         runCNN(8, 8, "G-L-B");
+        printFreq(0, BigFrequencyTable[i], 1);
         ParseResults();
     }
 
@@ -96,11 +105,11 @@ int main(int argc, char *argv[])
   Impact of CPU frequency on GPU. You are free to approach this complexity as you see fit.
   **/
 
-    /* Run everything on Little, Big, and GPU separately. */
-    std::array<std::string, 3> orders = {"L-G-B", "B-L-G", "G-B-L"};
-    for(const auto& order : orders) {
-        runCNN(8, 8, order);
-        ParseResults();
-    }
+//    /* Run everything on Little, Big, and GPU separately. */
+//    std::array<std::string, 3> orders = {"L-G-B", "B-L-G", "G-B-L"};
+//    for(const auto& order : orders) {
+//        runCNN(8, 8, order);
+//        ParseResults();
+//    }
 
 }
