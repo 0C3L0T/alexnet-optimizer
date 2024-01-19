@@ -84,9 +84,16 @@ int main(int argc, char *argv[])
         ParseResults();
     }
 
+  /**
+  4) Two-partition configuration representing the separation of Convolutional and Fully-Connected Layer, evaluated in all six possible placement combinations at fixed CPU frequencies
+  (Big, Little), (Little, Big), (Big, GPU), (GPU, Big), (Little, GPU), (GPU, Little).
+  **/
 
   /**
-  4) Two-partition configuration representing the separation of Convolutional and Fully-Connected Layer, evaluated in all six possible placement combinations at fixed CPU frequencies (Big, Little), (Little, Big), (Big, GPU), (GPU, Big), (Little, GPU), (GPU, Little).
+  For example, the behaviour of Three-Partition configurations needs to be understood.
+  Also, the interplay between partitions and frequencies is important.
+  Also, there is memory-compute heterogeneity between the layers of the same types due to varying sizes of input, weights, and biases, which is quite interesting.
+  Impact of CPU frequency on GPU. You are free to approach this complexity as you see fit.
   **/
 
     /* Run everything on Little, Big, and GPU separately. */
