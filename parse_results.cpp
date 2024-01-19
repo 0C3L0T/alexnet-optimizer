@@ -40,7 +40,7 @@ array<string, PARSEAMOUNT> outputLines =
     "latency:",
     "s1_input:",
     "s2_input:",
-    "s2_input:",
+    "s3_input:",
     "s1_inference:",
     "s2_inference:",
     "s3_inference:",
@@ -53,7 +53,7 @@ string getOutput(int index, string text) {
 
     if (index < 8)
     {
-        int floatOutput;
+        float floatOutput;
         if (stringstream(text) >> floatOutput)
         {
             return to_string(floatOutput);
