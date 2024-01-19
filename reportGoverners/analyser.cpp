@@ -10,38 +10,54 @@ using namespace std;
 int LittleFrequencyTable[] = {500000, 667000, 1000000, 1200000, 1398000, 1512000, 1608000, 1704000, 1800000};
 int BigFrequencyTable[] = {500000, 667000, 1000000, 1200000, 1398000, 1512000, 1608000, 1704000, 1800000, 1908000, 2016000, 2100000, 2208000};
 
+void setupOpenCL() {
+    system("export LD_LIBRARY_PATH=/data/local/Working_dir");
+    setenv("LD_LIBRARY_PATH", "/data/local/Working_dir", 1);
+}
+
+void setupPerformanceGovernor() {
+    system("echo performance > /sys/devices/system/cpu/cpufreq/policy0/scaling_governor");
+    system("echo performance > /sys/devices/system/cpu/cpufreq/policy2/scaling_governor");
+}
+
+void enableFan() {
+    system("echo 1 > /sys/class/fan/enable");
+    system("echo 0 > /sys/class/fan/mode");
+    system("echo 4 > /sys/class/fan/level");
+}
+
+void initLittleWithFreq(int freqTableIdx) {
+    string command = "";
+    command = "echo " + to_string(LittleFrequencyTable[freqTableIdx]) + " > /sys/devices/system/cpu/cpufreq/policy0/scaling_max_freq";
+    system(Command.c_str());
+}
+
+void initBigWithFreq(int freqTableIdx) {
+    string command = "";
+    command = "echo " + to_string(BigFrequencyTable[freqTableIdx]) + " > /sys/devices/system/cpu/cpufreq/policy2/scaling_max_freq";
+    system(Command.c_str());
+}
+
 int main(int argc, char *argv[])
 {
     string Command = "";
     cout << "starting program" << endl;
 
-
     /* Checking if processor is available */
     if (system(NULL))
         cout << "Ok" << endl;
-
     else
         exit(EXIT_FAILURE);
 
-    /* Export OpenCL library path */
-    system("export LD_LIBRARY_PATH=/data/local/Working_dir");
-    setenv("LD_LIBRARY_PATH", "/data/local/Working_dir", 1);
-
-    /* Setup Performance Governor (CPU) */
-    system("echo performance > /sys/devices/system/cpu/cpufreq/policy0/scaling_governor");
-    system("echo performance > /sys/devices/system/cpu/cpufreq/policy2/scaling_governor");
-    system("echo 1 > /sys/class/fan/enable");
-    system("echo 0 > /sys/class/fan/mode");
-    system("echo 4 > /sys/class/fan/level");
+    setupOpenCL();
+    setupPerformanceGovernor();
+    enableFan();
 
     /* Initialize Little and Big CPU with Lowest Frequency */
-    Command = "echo " + to_string(LittleFrequencyTable[0]) + " > /sys/devices/system/cpu/cpufreq/policy0/scaling_max_freq";
-    system(Command.c_str());
-    Command = "echo " + to_string(BigFrequencyTable[0]) + " > /sys/devices/system/cpu/cpufreq/policy2/scaling_max_freq";
-    system(Command.c_str());
+    initLittleWithFreq(0);
+    initBigWithFreq(0);
 
     /* Run everything on Little, Big, and GPU seperately. */
-
     char Run_Command[150];
     std::array<std::string, 3> orders = {"L-G-B", "B-L-G", "G-B-L"};
     for(const auto& order : orders) {
