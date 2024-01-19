@@ -29,13 +29,13 @@ void enableFan() {
 void initLittleWithFreq(int freqTableIdx) {
     string command = "";
     command = "echo " + to_string(LittleFrequencyTable[freqTableIdx]) + " > /sys/devices/system/cpu/cpufreq/policy0/scaling_max_freq";
-    system(Command.c_str());
+    system(command.c_str());
 }
 
 void initBigWithFreq(int freqTableIdx) {
     string command = "";
     command = "echo " + to_string(BigFrequencyTable[freqTableIdx]) + " > /sys/devices/system/cpu/cpufreq/policy2/scaling_max_freq";
-    system(Command.c_str());
+    system(command.c_str());
 }
 
 void runCNN(int partition_point, int partition_point2, const std::string& order) {
@@ -63,18 +63,36 @@ int main(int argc, char *argv[])
     initLittleWithFreq(0);
     initBigWithFreq(0);
 
+    // Little Cluster at all Frequencies
+    for(int i = 0; i < 9; i++) {
+        initLittleWithFreq(i);
+        runCNN(8, 8, "L-G-B");
+        ParseResults();
+    }
+
+    // Big Cluster at all Frequencies
+    for(int i = 0; i < 13; i++) {
+        initBigWithFreq(i);
+        runCNN(8, 8, "B-L-G");
+        ParseResults();
+    }
+
+    // GPU (with all Big Frequencies)
+    for(int i = 0; i < 13; i++) {
+        initBigWithFreq(i);
+        runCNN(8, 8, "G-L-B");
+        ParseResults();
+    }
+
 
   /**
-  1) AlexNet on Little Cluster at all Frequencies
-  2) AlexNet on Big Cluster at all Frequencies
-  3) AlexNet on GPU
   4) Two-partition configuration representing the separation of Convolutional and Fully-Connected Layer, evaluated in all six possible placement combinations at fixed CPU frequencies (Big, Little), (Little, Big), (Big, GPU), (GPU, Big), (Little, GPU), (GPU, Little).
   **/
 
     /* Run everything on Little, Big, and GPU separately. */
     std::array<std::string, 3> orders = {"L-G-B", "B-L-G", "G-B-L"};
     for(const auto& order : orders) {
-        runCNN(8, 8, order)
+        runCNN(8, 8, order);
         ParseResults();
     }
 
