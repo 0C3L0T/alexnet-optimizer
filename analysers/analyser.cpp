@@ -78,7 +78,7 @@ int main(int argc, char *argv[])
     }
 
     // Big Cluster at all Frequencies
-    for(int i = 0; i < 13; i++) {
+    for(int i = 0; i < 11; i++) {
         initBigWithFreq(i);
         runCNN(8, 8, "B-L-G");
         printFreq(0, BigFrequencyTable[i], 0);
@@ -86,7 +86,7 @@ int main(int argc, char *argv[])
     }
 
     // GPU (with all Big Frequencies)
-    for(int i = 0; i < 13; i++) {
+    for(int i = 0; i < 11; i++) {
         initBigWithFreq(i);
         runCNN(8, 8, "G-L-B");
         printFreq(0, BigFrequencyTable[i], 1);
