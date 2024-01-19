@@ -38,6 +38,12 @@ void initBigWithFreq(int freqTableIdx) {
     system(Command.c_str());
 }
 
+void runCNN(int partition_point, int partition_point2, const std::string& order) {
+    char Run_Command[150];
+    sprintf(Run_Command, "./graph_alexnet_all_pipe_sync --threads=4  --threads2=2 --n=60 --total_cores=6 --partition_point=%d --partition_point2=%d --order=%s", partition_point, partition_point2, order.c_str());
+    system(Run_Command);
+}
+
 int main(int argc, char *argv[])
 {
     string Command = "";
@@ -57,12 +63,18 @@ int main(int argc, char *argv[])
     initLittleWithFreq(0);
     initBigWithFreq(0);
 
-    /* Run everything on Little, Big, and GPU seperately. */
-    char Run_Command[150];
+
+  /**
+  1) AlexNet on Little Cluster at all Frequencies
+  2) AlexNet on Big Cluster at all Frequencies
+  3) AlexNet on GPU
+  4) Two-partition configuration representing the separation of Convolutional and Fully-Connected Layer, evaluated in all six possible placement combinations at fixed CPU frequencies (Big, Little), (Little, Big), (Big, GPU), (GPU, Big), (Little, GPU), (GPU, Little).
+  **/
+
+    /* Run everything on Little, Big, and GPU separately. */
     std::array<std::string, 3> orders = {"L-G-B", "B-L-G", "G-B-L"};
     for(const auto& order : orders) {
-        sprintf(Run_Command, "./graph_alexnet_all_pipe_sync --threads=4  --threads2=2 --n=60 --total_cores=6 --partition_point=8 --partition_point2=8 --order=G-B-L &> /data/local/Working_dir/output.txt", order.c_str());
-        system(Run_Command);
+        runCNN(8, 8, order)
         ParseResults();
     }
 
