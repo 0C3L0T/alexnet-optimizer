@@ -1,4 +1,3 @@
-
 import re
 
 
@@ -34,12 +33,60 @@ def parseLine(line: str):
     return time, outputT
 
 class Aggregator():
+    """
+    Aggregator class is responsible for merging performance and power data into
+    one data structure.
+
+    Constructor args:
+        processOutputPath (str): The file path of the process output data.
+        powerOutputPath (str): The file path of the power output data.
+
+    Attributes:
+        tests (list): A list of dictionaries containing aggregated performance
+        and power data.
+
+    Default format of attribute "tests":
+        list of dictionaries, each list is a test, and the dictionary contains
+        data of several values measured or known from the test. These are:
+        (known):
+            Little Frequency  : int ∈ { 500000, 667000, 1000000,
+                                        1200000, 398000, 1512000,
+                                        1608000, 1704000, 1800000 } (Hz)
+            Big Frequency     : int ∈ { 500000, 667000, 1000000,
+                                        1200000, 1398000, 1512000,
+                                        1608000, 1704000, 1800000,
+                                        1908000, 2016000, 2100000,
+                                        2208000 } (Hz)
+            GPU On            : int ∈ {0, 1} (Bool)
+            pp1               : int ∈ {0...8}         # "Partition Point"
+            pp2               : int ∈ {0...8}
+            order             : str ∈ {"a-b-c" | a,b,c ∈ {G, B, L}}
+        (measured):
+            duration          : float (s)
+            s1 | s2 | s3:                    # "Stage n"
+                input         : float (s)
+                inference     : float (s)
+            fps               : float (frames / s)
+            latency           : float (s)    # MISSING IN DATA???
+            avg | peak:
+                Voltage       : float (V)
+                Current       : float (mA)
+                Power         : float (mW)
+    """
+
     def __init__(self, processOutputPath, powerOutputPath):
         self.tests = []
         self.processOutputPath = processOutputPath
         self.powerOutputPath = powerOutputPath
 
     def aggregate(self):
+        """
+        Aggregates the performance and power data.
+
+        Returns:
+            None
+
+        """
         processOutput = open(self.processOutputPath, "r")
         powerOutput = open(self.powerOutputPath, "r")
 
@@ -72,8 +119,8 @@ class Aggregator():
             powerDataT = transpose(powerData)
             powerAvgs = list(map(lambda x : sum(x)/len(x), powerDataT))
             powerPeaks = list(map(max, powerDataT))
-            avgPowerLabels = map(lambda x: 'avg' + x.capitalize(), powerLabels)
-            peakPowerLabels = map(lambda x: 'peak' + x.capitalize(), powerLabels)
+            avgPowerLabels = map(lambda x: 'avg'+x.capitalize(), powerLabels)
+            peakPowerLabels = map(lambda x: 'peak'+x.capitalize(), powerLabels)
             avgPowerDict = dict(transpose([avgPowerLabels, powerAvgs]))
             peakPowerDict = dict(transpose([peakPowerLabels, powerPeaks]))
 
