@@ -39,7 +39,7 @@ void initBigWithFreq(int freqTableIdx) {
 }
 
 void runCNN(int partition_point, int partition_point2, const std::string& order) {
-    char Run_Command[150];
+    char Run_Command[256];
     sprintf(Run_Command, "./graph_alexnet_all_pipe_sync --threads=4  --threads2=2 --n=60 --total_cores=6 --partition_point=%d --partition_point2=%d --order=%s > output.txt", partition_point, partition_point2, order.c_str());
     system(Run_Command);
 }
@@ -69,37 +69,37 @@ int main(int argc, char *argv[])
     initLittleWithFreq(0);
     initBigWithFreq(0);
 
-    // Little Cluster at all Frequencies
-    for(int i = 0; i < 9; i++) {
-        initLittleWithFreq(i);
-        runCNN(8, 8, "L-G-B");
-        printFreq(LittleFrequencyTable[i], 0, 0);
-        ParseResults();
-    }
-
-    // Big Cluster at all Frequencies
-    for(int i = 0; i < 11; i++) {
-        initBigWithFreq(i);
-        runCNN(8, 8, "B-L-G");
-        printFreq(0, BigFrequencyTable[i], 0);
-        ParseResults();
-    }
-
-    // GPU (with all Big Frequencies)
-    for(int i = 0; i < 11; i++) {
-        initBigWithFreq(i);
-        runCNN(8, 8, "G-L-B");
-        printFreq(0, BigFrequencyTable[i], 1);
-        ParseResults();
-    }
+//    // Little Cluster at all Frequencies
+//    for(int i = 0; i < 9; i++) {
+//        initLittleWithFreq(i);
+//        runCNN(8, 8, "L-G-B");
+//        printFreq(LittleFrequencyTable[i], 0, 0);
+//        ParseResults();
+//    }
+//
+//    // Big Cluster at all Frequencies
+//    for(int i = 0; i < 11; i++) {
+//        initBigWithFreq(i);
+//        runCNN(8, 8, "B-L-G");
+//        printFreq(0, BigFrequencyTable[i], 0);
+//        ParseResults();
+//    }
+//
+//    // GPU (with all Big Frequencies)
+//    for(int i = 0; i < 11; i++) {
+//        initBigWithFreq(i);
+//        runCNN(8, 8, "G-L-B");
+//        printFreq(0, BigFrequencyTable[i], 1);
+//        ParseResults();
+//    }
 
     // Two-partition configuration representing the separation of Convolutional
     // and Fully-Connected Layer, evaluated in all six possible placement
     // combinations at fixed CPU frequencies.
     std::array<std::string, 6> orders = {"B-L-G", "L-B-G", "B-G-L", "G-B-L", "L-G-B", "G-L-B"};
     for(const auto& order : orders) {
-        initBigWithFreq(1800000);
-        initLittleWithFreq(2016000);
+        initBigWithFreq(10);
+        initLittleWithFreq(8);
         runCNN(5, 8, order);
         ParseResults();
     }
