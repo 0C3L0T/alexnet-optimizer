@@ -93,10 +93,16 @@ int main(int argc, char *argv[])
         ParseResults();
     }
 
-  /**
-  4) Two-partition configuration representing the separation of Convolutional and Fully-Connected Layer, evaluated in all six possible placement combinations at fixed CPU frequencies
-  (Big, Little), (Little, Big), (Big, GPU), (GPU, Big), (Little, GPU), (GPU, Little).
-  **/
+    // Two-partition configuration representing the separation of Convolutional
+    // and Fully-Connected Layer, evaluated in all six possible placement
+    // combinations at fixed CPU frequencies.
+    std::array<std::string, 6> orders = {"B-L-G", "L-B-G", "B-G-L", "G-B-L", "L-G-B", "G-L-B"};
+    for(const auto& order : orders) {
+        initBigWithFreq(1800000);
+        initLittleWithFreq(2016000);
+        runCNN(5, 8, order);
+        ParseResults();
+    }
 
   /**
   For example, the behaviour of Three-Partition configurations needs to be understood.
