@@ -1,4 +1,4 @@
-from measurementGrapher import *
+from measurementTools import *
 from measurementAggregator import Aggregator
 import matplotlib.pyplot as plt
 import numpy as np
