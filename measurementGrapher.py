@@ -16,6 +16,12 @@ def InputValFilterCurry(kv):
         return True
     return filterFunc
 
+def formatForPLT(results):
+    """
+    [inDict, outDict] -> [[inKeyList, inValList],[outKeyList,outValList]]
+    """
+    return list(map(lambda x: transpose(x.items()), results))
+
 a = Aggregator("adbParser/adb_output.txt", "powerLogger/power_output.txt")
 a.aggregate()
 
