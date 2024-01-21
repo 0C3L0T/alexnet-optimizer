@@ -49,10 +49,10 @@ class Aggregator():
         list of dictionaries, each list is a test, and the dictionary contains
         data of several values measured or known from the test. These are:
         (known):
-            Little Frequency  : int ∈ { 500000, 667000, 1000000,
+            Little Frequency  : int ∈ { 0, 500000, 667000, 1000000,
                                         1200000, 398000, 1512000,
                                         1608000, 1704000, 1800000 } (Hz)
-            Big Frequency     : int ∈ { 500000, 667000, 1000000,
+            Big Frequency     : int ∈ { 0, 500000, 667000, 1000000,
                                         1200000, 1398000, 1512000,
                                         1608000, 1704000, 1800000,
                                         1908000, 2016000, 2100000,
@@ -64,8 +64,8 @@ class Aggregator():
         (measured):
             duration          : float (s)
             s1 | s2 | s3:                    # "Stage n"
-                input         : float (s)
-                inference     : float (s)
+                _input        : float (s)
+                _inference    : float (s)
             fps               : float (frames / s)
             latency           : float (s)    # MISSING IN DATA???
             avg | peak:
@@ -76,19 +76,19 @@ class Aggregator():
 
     def __init__(self, processOutputPath, powerOutputPath):
         self.tests = []
-        self.splitted = []
+        self.split = []
         self.processOutputPath = processOutputPath
         self.powerOutputPath = powerOutputPath
 
     def splitKnown(self):
-        self.splitted = []
+        self.split = []
         for i, test in enumerate(self.tests):
-            self.splitted.append([{},{}])
+            self.split.append([{},{}])
             for key,val in test.items():
                 if isinstance(val, float):
-                    self.splitted[i][1][key] = val
+                    self.split[i][1][key] = val
                 else:
-                    self.splitted[i][0][key] = val
+                    self.split[i][0][key] = val
 
     def aggregate(self, append=False, autoSplit=True):
         """
@@ -151,4 +151,4 @@ class Aggregator():
 if __name__ == "__main__":
     a = Aggregator("adbParser/adb_output.txt", "powerLogger/power_output.txt")
     a.aggregate()
-    print(a.splitted)
+    print(a.split)
