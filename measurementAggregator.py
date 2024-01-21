@@ -76,10 +76,21 @@ class Aggregator():
 
     def __init__(self, processOutputPath, powerOutputPath):
         self.tests = []
+        self.splitted = []
         self.processOutputPath = processOutputPath
         self.powerOutputPath = powerOutputPath
 
-    def aggregate(self):
+    def splitKnown(self):
+        self.splitted = []
+        for i, test in enumerate(self.tests):
+            self.splitted.append([{},{}])
+            for key,val in test.items():
+                if isinstance(val, float):
+                    self.splitted[i][1][key] = val
+                else:
+                    self.splitted[i][0][key] = val
+
+    def aggregate(self, append=False, autoSplit=True):
         """
         Aggregates the performance and power data.
 
@@ -87,6 +98,9 @@ class Aggregator():
             None
 
         """
+        if not append:
+            self.tests = []
+
         processOutput = open(self.processOutputPath, "r")
         powerOutput = open(self.powerOutputPath, "r")
 
@@ -130,8 +144,11 @@ class Aggregator():
         powerOutput.close()
         processOutput.close()
 
+        if autoSplit:
+            self.splitKnown()
+
 
 if __name__ == "__main__":
     a = Aggregator("adbParser/adb_output.txt", "powerLogger/power_output.txt")
     a.aggregate()
-    print(a.tests)
+    print(a.splitted)
