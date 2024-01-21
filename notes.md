@@ -26,16 +26,7 @@ GPU has to work with BIG CPU
 
 Are there knobs that we can turn that result in good performance independent of other factors?
 
-### quad core Cortex-A73 'big' cluster
-- L1 cache: 96-128 KiB per core
-- L2 cache: 1-8 MiB
 
-### dual core Cortex-A53 'little' cluster
-- L1 cache: 8-64 KiB
-- L2 cache: 128 KiB - 2 MiB
-
-### dual core Mali-G52 MP4 GPU
-- L2 cache: 128 KB
 
 We can try and put the hardware with the most cache space earlier in the order, since the earlier stages contain more data.
 

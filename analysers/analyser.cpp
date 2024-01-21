@@ -69,29 +69,29 @@ int main(int argc, char *argv[])
     initLittleWithFreq(0);
     initBigWithFreq(0);
 
-    // Little Cluster at all Frequencies
-    for(int i = 0; i < 9; i++) {
-        initLittleWithFreq(i);
-        runCNN(8, 8, "L-G-B");
-        printFreq(LittleFrequencyTable[i], 0, 0);
-        ParseResults();
-    }
-
-    // Big Cluster at all Frequencies
-    for(int i = 0; i < 11; i++) {
-        initBigWithFreq(i);
-        runCNN(8, 8, "B-L-G");
-        printFreq(0, BigFrequencyTable[i], 0);
-        ParseResults();
-    }
-
-    // GPU (with all Big Frequencies)
-    for(int i = 0; i < 11; i++) {
-        initBigWithFreq(i);
-        runCNN(8, 8, "G-L-B");
-        printFreq(0, BigFrequencyTable[i], 1);
-        ParseResults();
-    }
+//    // Little Cluster at all Frequencies
+//    for(int i = 0; i < 9; i++) {
+//        initLittleWithFreq(i);
+//        runCNN(8, 8, "L-G-B");
+//        printFreq(LittleFrequencyTable[i], 0, 0);
+//        ParseResults();
+//    }
+//
+//    // Big Cluster at all Frequencies
+//    for(int i = 0; i < 11; i++) {
+//        initBigWithFreq(i);
+//        runCNN(8, 8, "B-L-G");
+//        printFreq(0, BigFrequencyTable[i], 0);
+//        ParseResults();
+//    }
+//
+//    // GPU (with all Big Frequencies)
+//    for(int i = 0; i < 11; i++) {
+//        initBigWithFreq(i);
+//        runCNN(8, 8, "G-L-B");
+//        printFreq(0, BigFrequencyTable[i], 1);
+//        ParseResults();
+//    }
 
     // Two-partition configuration representing the separation of Convolutional
     // and Fully-Connected Layer, evaluated in all six possible placement
