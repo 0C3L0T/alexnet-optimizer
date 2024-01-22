@@ -77,13 +77,13 @@ int main(int argc, char *argv[])
 //        ParseResults();
 //    }
 //
-//    // Big Cluster at all Frequencies
-//    for(int i = 0; i < 11; i++) {
-//        initBigWithFreq(i);
-//        runCNN(8, 8, "B-L-G");
-//        printFreq(0, BigFrequencyTable[i], 0);
-//        ParseResults();
-//    }
+    // Big Cluster at all Frequencies
+    for(int i = 0; i < 11; i++) {
+        initBigWithFreq(i);
+        runCNN(8, 8, "B-L-G");
+        printFreq(0, BigFrequencyTable[i], 0);
+        ParseResults();
+    }
 //
 //    // GPU (with all Big Frequencies)
 //    for(int i = 0; i < 11; i++) {
@@ -96,13 +96,13 @@ int main(int argc, char *argv[])
     // Two-partition configuration representing the separation of Convolutional
     // and Fully-Connected Layer, evaluated in all six possible placement
     // combinations at fixed CPU frequencies.
-    std::array<std::string, 6> orders = {"B-L-G", "L-B-G", "B-G-L", "G-B-L", "L-G-B", "G-L-B"};
-    for(const auto& order : orders) {
-        initBigWithFreq(10);
-        initLittleWithFreq(8);
-        runCNN(5, 8, order);
-        ParseResults();
-    }
+//    std::array<std::string, 6> orders = {"B-L-G", "L-B-G", "B-G-L", "G-B-L", "L-G-B", "G-L-B"};
+//    for(const auto& order : orders) {
+//        initBigWithFreq(10);
+//        initLittleWithFreq(8);
+//        runCNN(5, 8, order);
+//        ParseResults();
+//    }
 
   /**
   For example, the behaviour of Three-Partition configurations needs to be understood.
@@ -118,4 +118,5 @@ int main(int argc, char *argv[])
 //        ParseResults();
 //    }
 
+  cout << "ending program" << endl;
 }
