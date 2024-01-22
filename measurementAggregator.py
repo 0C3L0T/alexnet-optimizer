@@ -165,7 +165,6 @@ class Aggregator():
             raise ValueError
         for i in range(len(processOutputPaths)):
             self.aggregate(processOutputPaths[i], powerOutputPaths[i], append=True)
-        self.averageMeasurements()
 
     def aggregate(self, processOutputPath, powerOutputPath, append=False, autoSplit=True):
         """
@@ -222,9 +221,3 @@ class Aggregator():
 
         if autoSplit:
             self.splitKnown()
-
-
-# if __name__ == "__main__":
-#     a = Aggregator()
-#     a.aggregate("adbParser/adb_output.txt", "powerLogger/power_output.txt")
-#     print(a.split)
