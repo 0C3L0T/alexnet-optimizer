@@ -46,6 +46,8 @@ def formatToPLT(data, test_filter, keeps):
     filter the values to only those relevant, and output a format easy to be
     used in a script to plot the data.
     """
-    tests_filtered = filter(InputValFilterCurry(test_filter), data)
+    tests_filtered = list(filter(InputValFilterCurry(test_filter), data))
+    if not len(tests_filtered):
+        print("No matching tests")
     labels, vals = outputBundle(variableIsolator(merge(reformat(tests_filtered)), keeps))
     return labels, np.array(vals)
