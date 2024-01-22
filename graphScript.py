@@ -1,5 +1,6 @@
 from measurementTools import *
 from measurementAggregator import Aggregator
+import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
 import numpy as np
 import re
@@ -14,8 +15,8 @@ import re
 # powerOutputs = [f"test_results/single_components/big/{i}/power_output.txt" for i in range(1,4)] + [f"test_results/single_components/gpu/{i}/power_output.txt" for i in range(1,3)]
 # a.bulkAggregate(processOutputs, powerOutputs)
 a = Aggregator()
-a.aggregate("test_results/single_components/adb_output.txt",
-            "test_results/single_components/power_output.txt")
+a.aggregate("test_results/single_components/together/3/adb_output.txt",
+            "test_results/single_components/together/3/power_output.txt")
 
 single = a.split
 # print(single)
@@ -125,7 +126,7 @@ pwrgpu = gpuPlotVals[2]/1000
 fig, ax1 = plt.subplots()
 
 color = 'tab:red'
-ax1.set_xlabel('Core clock (GHz)')
+ax1.set_xlabel('Core clock of big cluster (GHz)')
 ax1.set_ylabel('FPS', color=color)  # we already handled the x-label with ax1
 ax1.plot(bigfreqgpu, fpsgpu, color=color)
 ax1.tick_params(axis='y', labelcolor=color)
@@ -138,14 +139,14 @@ ax2.plot(bigfreqgpu, pwrgpu, color=color)
 ax2.tick_params(axis='y', labelcolor=color)
 
 # fig.tight_layout()  # otherwise the right y-label is slightly clipped
-plt.title("GPU on, modulating big frequency")
+plt.title("GPU only, modulating big frequency")
 plt.show()
 
 ### new plot ##################################################################
 
 # print(multi)
 orderLabels, orderVals1 = formatToPLT(multi, [], ["order", "fps", "avgPower", "s1_inference", "s1_input", "s2_inference", "s2_input"])
-orderVals = np.round(np.array(orderVals1[1:]), 1)
+orderVals = np.round(np.array(orderVals1[1:]), 0)
 # print(orderLabels) ['order', 's1_input', 's1_inference', 's2_input', 's2_inference', 'fps', 'avgPower']
 
 orders = orderVals1[0]
@@ -161,26 +162,41 @@ fps = orderVals[4]
 power = orderVals[5]/1000
 
 data1 = [s1_total, s2_total]
+data1stacked = {
+    'Conv layers ': {'input': orderVals[0], 'inference': orderVals[1]},
+    'Fully connected layers ': {'input': orderVals[2], 'inference': orderVals[3]}
+}
 data2 = [ fps, power]
 labels1 = ["Conv layers", "Fully connected layers"]
 labels2 = ["FPS", "Power"]
 
 fig, ax = plt.subplots()
 
+colors = ["tab:blue", "tab:orange", "tab:gray"]
+
 x = np.arange(len(orders))  # the label locations
 width = 0.45  # the width of the bars
 multiplier = 0
-
-for i, label in enumerate(labels1):
+print(data1stacked)
+for colorindex, (stage, stack) in enumerate(data1stacked.items()):
     offset = width * multiplier
-    rects = ax.bar(x + offset, data1[i], width, label=label)
-    ax.bar_label(rects, padding=3)
+    bottom = np.zeros(6)
+    for height, data in stack.items():
+        color = colors[colorindex] if height != 'input' else colors[2]
+        rects = ax.bar(x + offset, data, width, bottom=bottom, color=color)
+        bottom += data
+        if height == 'inference':
+            ax.bar_label(rects, padding=3)
     multiplier += 1
 
 ax.set_ylabel('Latency (ms)')
 ax.set_title('Latency by AlexNet part for various Pipe-ALL configurations (lower is better)')
 ax.set_xticks(x + 0.5*width, expanded_orders)
-ax.legend(loc='upper left', ncols=3)
+lg1 = mpatches.Patch(color='tab:blue', label='Convolutional layers')
+lg2 = mpatches.Patch(color='tab:orange', label='Fully connected layers')
+lg3 = mpatches.Patch(color='tab:gray', label='Input time')
+plt.legend()
+ax.legend(handles=[lg1, lg2, lg3], loc='upper left', ncols=2)
 ax.set_ylim(0, 270)
 
 plt.show()
@@ -217,6 +233,8 @@ ax1.set_xticks(x + 0.5*width, expanded_orders)
 # fig.tight_layout()  # otherwise the right y-label is slightly clipped
 # plt.title("GPU on, modulating big frequency")
 plt.show()
+
+### new plot ##################################################################
 
 
 
