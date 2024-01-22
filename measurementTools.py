@@ -1,5 +1,4 @@
 from measurementAggregator import transpose, InputValFilterCurry, reformat
-import numpy as np
 
 def flatten(xss):
     """
@@ -50,4 +49,4 @@ def formatToPLT(data, test_filter, keeps):
     if not len(tests_filtered):
         print("No matching tests")
     labels, vals = outputBundle(variableIsolator(merge(reformat(tests_filtered)), keeps))
-    return labels, np.array(vals)
+    return labels, vals

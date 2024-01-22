@@ -2,6 +2,7 @@ from measurementTools import *
 from measurementAggregator import Aggregator
 import matplotlib.pyplot as plt
 import numpy as np
+import re
 
 # a = Aggregator()
 # a.aggregate("test_results/single_components/adb_output.txt",
@@ -31,7 +32,7 @@ del b
 ### new plot ##################################################################
 
 littleplotLabels, littlePlotVals = formatToPLT(single, [("Big Frequency", 0), ("GPU On", 0)], ["fps", "avgPower", "Little Frequency"])
-
+littlePlotVals = np.array(littlePlotVals)
 ##### vals are: freq, pwr, fps #####
 
 fig, ax1 = plt.subplots()
@@ -74,6 +75,7 @@ plt.show()
 ### new plot ##################################################################
 
 bigplotLabels, bigPlotVals = formatToPLT(single, [("Little Frequency", 0), ("GPU On", 0)], ["fps", "avgPower", "Big Frequency"])
+bigPlotVals = np.array(bigPlotVals)
 
 bigFreq = bigPlotVals[0]/1e6
 bigPwr = bigPlotVals[2]/1000
@@ -114,6 +116,7 @@ plt.show()
 ### new plot ##################################################################
 
 gpuPlotLabels, gpuPlotVals = formatToPLT(single, [("GPU On", 1)], ["fps", "avgPower", "Big Frequency"])
+gpuPlotVals = np.array(gpuPlotVals)
 
 bigfreqgpu = gpuPlotVals[0]/1e6
 fpsgpu = gpuPlotVals[1]
@@ -137,6 +140,85 @@ ax2.tick_params(axis='y', labelcolor=color)
 # fig.tight_layout()  # otherwise the right y-label is slightly clipped
 plt.title("GPU on, modulating big frequency")
 plt.show()
+
+### new plot ##################################################################
+
+# print(multi)
+orderLabels, orderVals1 = formatToPLT(multi, [], ["order", "fps", "avgPower", "s1_inference", "s1_input", "s2_inference", "s2_input"])
+orderVals = np.round(np.array(orderVals1[1:]), 1)
+# print(orderLabels) ['order', 's1_input', 's1_inference', 's2_input', 's2_inference', 'fps', 'avgPower']
+
+orders = orderVals1[0]
+trunc_orders = [order[:3] for order in orders]
+di = {ord('B'): 'Big', ord('G'): 'GPU', ord('L'): 'Little'}
+expanded_orders = [order.translate(di) for order in trunc_orders]
+
+# print(orderVals[1])
+# print(orderVals[2])
+s1_total = orderVals[0] + orderVals[1]
+s2_total = orderVals[2] + orderVals[3]
+fps = orderVals[4]
+power = orderVals[5]/1000
+
+data1 = [s1_total, s2_total]
+data2 = [ fps, power]
+labels1 = ["Conv layers", "Fully connected layers"]
+labels2 = ["FPS", "Power"]
+
+fig, ax = plt.subplots()
+
+x = np.arange(len(orders))  # the label locations
+width = 0.45  # the width of the bars
+multiplier = 0
+
+for i, label in enumerate(labels1):
+    offset = width * multiplier
+    rects = ax.bar(x + offset, data1[i], width, label=label)
+    ax.bar_label(rects, padding=3)
+    multiplier += 1
+
+ax.set_ylabel('Latency (ms)')
+ax.set_title('Latency by AlexNet part for various Pipe-ALL configurations (lower is better)')
+ax.set_xticks(x + 0.5*width, expanded_orders)
+ax.legend(loc='upper left', ncols=3)
+ax.set_ylim(0, 270)
+
+plt.show()
+
+### new plot ##################################################################
+
+fig, ax1 = plt.subplots()
+width = 0.25
+multiplier = 0
+
+color = 'tab:red'
+ax1.set_ylabel('FPS', color=color)  # we already handled the x-label with ax1
+offset = width*0.9 * multiplier
+rects = ax1.bar(x + offset, data2[0], width, label=labels2[0], color=color)
+ax1.tick_params(axis='y', labelcolor=color)
+
+multiplier += 1
+ax2 = ax1.twinx()  # instantiate a second axes that shares the same x-axis
+
+color = 'tab:blue'
+ax2.set_ylabel('Power (W)', color=color)
+offset = width*1.1 * multiplier
+rects = ax2.bar(x + offset, data2[1], width, label=labels2[1], color=color)
+ax.bar_label(rects, padding=3)
+ax2.tick_params(axis='y', labelcolor=color)
+# multiplier += 1
+
+ax1.set_title('FPS and Power by AlexNet part for various Pipe-ALL configurations (lower is better)')
+ax1.set_xticks(x + 0.5*width, expanded_orders)
+# ax1.legend(loc='upper left', ncols=3)
+# ax1.set_ylim(0, 270)
+
+
+# fig.tight_layout()  # otherwise the right y-label is slightly clipped
+# plt.title("GPU on, modulating big frequency")
+plt.show()
+
+
 
 # c = Aggregator()
 # processOutputs = [f"test_results/single_components/big/{i}/adb_output.txt" for i in range(1,4)] + [f"test_results/single_components/gpu/{i}/adb_output.txt" for i in range(1,3)]
