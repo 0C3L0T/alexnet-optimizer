@@ -1,5 +1,60 @@
 import re
 
+def reformat(tests):
+    """
+    [ [{inKey: inVal,}, {outKey: outVal,}], ] -> [ [[(inKey, inVal),], [(outKey,outVal),]], ]
+    """
+    return [list(map(lambda x: list(x.items()), test)) for test in tests]
+
+def InputValFilterCurry(kv):
+    """
+    Filter auxiliary function for filtering tests only with desired input
+    values.
+
+    args:
+        kv: List of iterables of one key and one or more values where each key
+            is a data label and the values are the permitted values for the
+            list to pass the filter check.
+
+    usage:
+        filter(InputValFilterCurry([
+                    ("order", "G-L-B", "G-B-L"),
+                    ("GPU On", 1),
+                    ("pp2", *range(4,9))
+                ]), a.split)
+    """
+    def filterFunc(test):
+        inputVals = test[0] # first index is input
+        for k,*v in kv:
+            if inputVals[k] not in v:
+                return False
+        return True
+    return filterFunc
+
+def OutputValFilterCurry(kv):
+    """
+    Filter auxiliary function for filtering tests only with desired output
+    values.
+
+    args:
+        kv: Key function pair where each key is a data label and each function
+            is a one argument function judging wether the value associated with
+            the key prevents the list from passing the filter check.
+            (function returns False to prevent the list from passing).
+
+    usage:
+        filter(outputValFilterCurry([
+                    ("avgPower", lambda x: x <= 2000.0),
+                    ("fps", lambda x: x > 5.0)
+                ]), a.split)
+    """
+    def filterFunc(test):
+        outputVals = test[1] # second index is output
+        for k,v in kv:
+            if not v(outputVals[k]):
+                return False
+        return True
+    return filterFunc
 
 def transpose(l):
     return list(map(list, zip(*l)))
@@ -77,8 +132,29 @@ class Aggregator():
     def __init__(self, processOutputPath, powerOutputPath):
         self.tests = []
         self.split = []
+        self.averaged = []
         self.processOutputPath = processOutputPath
         self.powerOutputPath = powerOutputPath
+
+    def averageMeasurements(self):
+        if self.split == []:
+            return
+
+        passedsigs = []
+        for test in self.split:
+            if test[0].__repr__() in passedsigs:
+                continue
+            passedsigs.append(test[0].__repr__())
+            similar = list(filter(InputValFilterCurry(test[0].items()), self.split))
+            keys = similar[0][1].keys()
+            # print(keys)
+            results = transpose([transpose(simTest[1])[1] for simTest in reformat(similar)])
+            # print(results)
+            resultsAvg = [sum(vals)/len(vals) for vals in results]
+            # print(keys, resultsAvg)
+            reconstructed = [test[0], dict(transpose([keys, resultsAvg]))]
+            print(reconstructed)
+            self.averaged.append(reconstructed)
 
     def splitKnown(self):
         self.split = []
@@ -146,6 +222,7 @@ class Aggregator():
 
         if autoSplit:
             self.splitKnown()
+            self.averageMeasurements()
 
 
 if __name__ == "__main__":
