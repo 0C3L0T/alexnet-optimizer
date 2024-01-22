@@ -129,12 +129,10 @@ class Aggregator():
                 Power         : float (mW)
     """
 
-    def __init__(self, processOutputPath, powerOutputPath):
+    def __init__(self):
         self.tests = []
         self.split = []
         self.averaged = []
-        self.processOutputPath = processOutputPath
-        self.powerOutputPath = powerOutputPath
 
     def averageMeasurements(self):
         if self.split == []:
@@ -147,13 +145,9 @@ class Aggregator():
             passedsigs.append(test[0].__repr__())
             similar = list(filter(InputValFilterCurry(test[0].items()), self.split))
             keys = similar[0][1].keys()
-            # print(keys)
             results = transpose([transpose(simTest[1])[1] for simTest in reformat(similar)])
-            # print(results)
             resultsAvg = [sum(vals)/len(vals) for vals in results]
-            # print(keys, resultsAvg)
             reconstructed = [test[0], dict(transpose([keys, resultsAvg]))]
-            print(reconstructed)
             self.averaged.append(reconstructed)
 
     def splitKnown(self):
@@ -166,7 +160,13 @@ class Aggregator():
                 else:
                     self.split[i][0][key] = val
 
-    def aggregate(self, append=False, autoSplit=True):
+    def bulkAggregate(self, processOutputPaths, powerOutputPaths):
+        if len(processOutputPaths) != len(powerOutputPaths):
+            raise ValueError
+        for i in range(len(processOutputPaths)):
+            self.aggregate(processOutputPaths[i], powerOutputPaths[i], append=True)
+
+    def aggregate(self, processOutputPath, powerOutputPath, append=False, autoSplit=True):
         """
         Aggregates the performance and power data.
 
@@ -177,8 +177,8 @@ class Aggregator():
         if not append:
             self.tests = []
 
-        processOutput = open(self.processOutputPath, "r")
-        powerOutput = open(self.powerOutputPath, "r")
+        processOutput = open(processOutputPath, "r")
+        powerOutput = open(powerOutputPath, "r")
 
         endTime = 0
         lastPowerDataPoint = []
@@ -190,7 +190,6 @@ class Aggregator():
                 continue
             perfDict = dict(transpose(perfData))
             perfDict['duration'] = endTime-startTime
-
             powerData = []
             if lastPowerDataPoint:
                 powerData.append(powerDataPoint)
@@ -222,10 +221,3 @@ class Aggregator():
 
         if autoSplit:
             self.splitKnown()
-            self.averageMeasurements()
-
-
-if __name__ == "__main__":
-    a = Aggregator("adbParser/adb_output.txt", "powerLogger/power_output.txt")
-    a.aggregate()
-    print(a.split)

@@ -3,18 +3,29 @@ from measurementAggregator import Aggregator
 import matplotlib.pyplot as plt
 import numpy as np
 
-a = Aggregator("test_results/single_components/adb_output.txt",
-               "test_results/single_components/power_output.txt")
-a.aggregate()
+# a = Aggregator()
+# a.aggregate("test_results/single_components/adb_output.txt",
+#             "test_results/single_components/power_output.txt",
+#             append=True)
+# a.aggregate("")
 
-single = a.averaged
+# processOutputs = [f"test_results/single_components/big/{i}/adb_output.txt" for i in range(1,4)] + [f"test_results/single_components/gpu/{i}/adb_output.txt" for i in range(1,3)]
+# powerOutputs = [f"test_results/single_components/big/{i}/power_output.txt" for i in range(1,4)] + [f"test_results/single_components/gpu/{i}/power_output.txt" for i in range(1,3)]
+# a.bulkAggregate(processOutputs, powerOutputs)
+a = Aggregator()
+a.aggregate("test_results/single_components/adb_output.txt",
+            "test_results/single_components/power_output.txt")
+
+single = a.split
+# print(single)
 del a
 
-b = Aggregator("test_results/order/adb_output.txt",
-               "test_results/order/power_output.txt")
-b.aggregate()
 
-multi = b.averaged
+b = Aggregator()
+b.aggregate("test_results/order/adb_output.txt",
+            "test_results/order/power_output.txt")
+
+multi = b.split
 del b
 
 ### new plot ##################################################################
@@ -49,9 +60,9 @@ plt.show()
 
 
 littlefpspw = littleFps/littlePwr
-print(littleFps)
-print(littlePwr)
-print(littlefpspw)
+# print(littleFps)
+# print(littlePwr)
+# print(littlefpspw)
 
 plt.xlabel('Core clock (GHz)')
 plt.ylabel('FPS/Watt')
@@ -126,3 +137,9 @@ ax2.tick_params(axis='y', labelcolor=color)
 # fig.tight_layout()  # otherwise the right y-label is slightly clipped
 plt.title("GPU on, modulating big frequency")
 plt.show()
+
+# c = Aggregator()
+# processOutputs = [f"test_results/single_components/big/{i}/adb_output.txt" for i in range(1,4)] + [f"test_results/single_components/gpu/{i}/adb_output.txt" for i in range(1,3)]
+# powerOutputs = [f"test_results/single_components/big/{i}/power_output.txt" for i in range(1,4)] + [f"test_results/single_components/gpu/{i}/power_output.txt" for i in range(1,3)]
+# c.bulkAggregate(processOutputs, powerOutputs)
+# print(c.averaged)
