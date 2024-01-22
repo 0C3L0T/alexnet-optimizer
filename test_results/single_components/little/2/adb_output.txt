@@ -1,0 +1,10 @@
+[1705929862.7946522] Ok
+[1705929940.2992759] Little Frequency: 500000, Big Frequency: 0, GPU On: 0, pp1:8, pp2:8, order:L-G-B, s3_input:0.000000, s3_inference:0.000000, s2_input:0.000000, s2_inference:0.000000, s1_input:0.002074, s1_inference:941.348022, fps:1.062300,
+[1705930000.361281] Little Frequency: 667000, Big Frequency: 0, GPU On: 0, pp1:8, pp2:8, order:L-G-B, s3_input:0.000000, s3_inference:0.000000, s2_input:0.000000, s2_inference:0.000000, s1_input:0.001728, s1_inference:717.906982, fps:1.392940,
+[1705930044.014348] Little Frequency: 1000000, Big Frequency: 0, GPU On: 0, pp1:8, pp2:8, order:L-G-B, s2_input:0.000000, s3_inference:0.000000, s2_inference:0.000000, s1_input:0.001415, s1_inference:502.984985, fps:1.988130,
+[1705930083.3543446] Little Frequency: 1200000, Big Frequency: 0, GPU On: 0, pp1:8, pp2:8, order:L-G-B, s2_input:0.000000, s3_inference:0.000000, s2_inference:0.000000, s1_input:0.001290, s1_inference:451.932007, fps:2.212720,
+[1705930120.394137] Little Frequency: 1398000, Big Frequency: 0, GPU On: 0, pp1:8, pp2:8, order:L-G-B, s2_input:0.000000, s3_inference:0.000000, s2_inference:0.000000, s1_input:0.001301, s1_inference:426.304993, fps:2.345730,
+[1705930156.4997528] Little Frequency: 1512000, Big Frequency: 0, GPU On: 0, pp1:8, pp2:8, order:L-G-B, s2_input:0.000000, s3_inference:0.000000, s2_inference:0.000000, s1_input:0.001203, s1_inference:417.506989, fps:2.395160,
+[1705930191.9036198] Little Frequency: 1608000, Big Frequency: 0, GPU On: 0, pp1:8, pp2:8, order:L-G-B, s2_input:0.000000, s3_inference:0.000000, s2_inference:0.000000, s1_input:0.001199, s1_inference:410.632996, fps:2.435260,
+[1705930226.8107345] Little Frequency: 1704000, Big Frequency: 0, GPU On: 0, pp1:8, pp2:8, order:L-G-B, s2_input:0.000000, s3_inference:0.000000, s2_inference:0.000000, s1_input:0.001208, s1_inference:405.330994, fps:2.467110,
+[1705930261.1399682] Little Frequency: 1800000, Big Frequency: 0, GPU On: 0, pp1:8, pp2:8, order:L-G-B, s2_input:0.000000, s2_inference:0.000000, s3_inference:0.000000, s1_input:0.001145, s1_inference:399.856995, fps:2.500890,
