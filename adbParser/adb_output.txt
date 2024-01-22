@@ -1,3 +1,0 @@
-[1705928951.6048543] starting program
-[1705928951.6050787] Ok
-[1705928989.2845373] Little Frequency: 0, Big Frequency: 500000, GPU On: 1, pp1:8, pp2:8, order:G-L-B, s3_input:0.000000, s3_inference:0.000000, s2_input:0.000000, s2_inference:0.000000, s1_input:1.346440, s1_inference:103.495003, fps:9.538200,
