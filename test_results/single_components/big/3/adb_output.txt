@@ -1,3 +1,4 @@
+[1705927830.1635199] Ok
 [1705927869.5545185] Little Frequency: 0, Big Frequency: 500000, GPU On: 0, pp1:8, pp2:8, order:B-L-G, s3_input:0.000000, s3_inference:0.000000, s2_input:0.000000, s2_inference:0.000000, s1_input:0.001422, s1_inference:411.263000, fps:2.431520,
 [1705927899.8667216] Little Frequency: 0, Big Frequency: 667000, GPU On: 0, pp1:8, pp2:8, order:B-L-G, s3_input:0.000000, s3_inference:0.000000, s2_input:0.000000, s2_inference:0.000000, s1_input:0.001290, s1_inference:307.002014, fps:3.257290,
 [1705927921.5627267] Little Frequency: 0, Big Frequency: 1000000, GPU On: 0, pp1:8, pp2:8, order:B-L-G, s3_input:0.000000, s3_inference:0.000000, s2_input:0.000000, s2_inference:0.000000, s1_input:0.000958, s1_inference:207.134995, fps:4.827750,
