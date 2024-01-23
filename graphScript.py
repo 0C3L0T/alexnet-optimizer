@@ -61,7 +61,7 @@ plt.show()
 ### new plot ##################################################################
 
 
-littlefpspw = littleFps/littlePwr
+littlefpspw = littleFps/(littlePwr)#-2)
 # print(littleFps)
 # print(littlePwr)
 # print(littlefpspw)
@@ -82,7 +82,9 @@ bigFreq = bigPlotVals[0]/1e6
 bigPwr = bigPlotVals[2]/1000
 bigFps = bigPlotVals[1]
 
-bigfpspw = bigFps/bigPwr
+# print((bigFps[10]-bigFps[0])/(bigFreq[10]-bigFreq[0]))
+# print((littleFps[8]-littleFps[0])/(littleFreq[8]-littleFreq[0]))
+bigfpspw = bigFps/(bigPwr)#-2)
 
 plt.xlabel('Core clock (GHz)')
 plt.ylabel('FPS/Watt')
@@ -116,27 +118,30 @@ plt.show()
 
 ### new plot ##################################################################
 
-gpuPlotLabels, gpuPlotVals = formatToPLT(single, [("GPU On", 1)], ["fps", "avgPower", "Big Frequency"])
+gpuPlotLabels, gpuPlotVals = formatToPLT(single, [("GPU On", 1)], ["fps", "avgPower", "Big Frequency", "s1_input"])
 gpuPlotVals = np.array(gpuPlotVals)
 
 bigfreqgpu = gpuPlotVals[0]/1e6
-fpsgpu = gpuPlotVals[1]
-pwrgpu = gpuPlotVals[2]/1000
+s1inp_time = gpuPlotVals[1]
+fpsgpu = gpuPlotVals[2]
+pwrgpu = gpuPlotVals[3]/1000
 
 fig, ax1 = plt.subplots()
 
-color = 'tab:red'
+# color = 'tab:red'
 ax1.set_xlabel('Core clock of big cluster (GHz)')
-ax1.set_ylabel('FPS', color=color)  # we already handled the x-label with ax1
-ax1.plot(bigfreqgpu, fpsgpu, color=color)
+# ax1.set_ylabel('FPS', color=color)  # we already handled the x-label with ax1
+ax1.set_ylabel('input time (seconds)')
+# ax1.plot(bigfreqgpu, fpsgpu, color=color)
+ax1.bar(bigfreqgpu, s1inp_time, width=0.08, color="tab:gray")
 ax1.tick_params(axis='y', labelcolor=color)
 
-ax2 = ax1.twinx()  # instantiate a second axes that shares the same x-axis
+# ax2 = ax1.twinx()  # instantiate a second axes that shares the same x-axis
 
-color = 'tab:blue'
-ax2.set_ylabel('Power (W)', color=color)
-ax2.plot(bigfreqgpu, pwrgpu, color=color)
-ax2.tick_params(axis='y', labelcolor=color)
+# color = 'tab:blue'
+# ax2.set_ylabel('Power (W)', color=color)
+# ax2.plot(bigfreqgpu, pwrgpu, color=color)
+# ax2.tick_params(axis='y', labelcolor=color)
 
 # fig.tight_layout()  # otherwise the right y-label is slightly clipped
 plt.title("GPU only, modulating big frequency")
@@ -224,7 +229,7 @@ ax.bar_label(rects, padding=3)
 ax2.tick_params(axis='y', labelcolor=color)
 # multiplier += 1
 
-ax1.set_title('FPS and Power by AlexNet part for various Pipe-ALL configurations (lower is better)')
+ax1.set_title('FPS and Power by AlexNet part for various Pipe-ALL configurations')
 ax1.set_xticks(x + 0.5*width, expanded_orders)
 # ax1.legend(loc='upper left', ncols=3)
 # ax1.set_ylim(0, 270)
