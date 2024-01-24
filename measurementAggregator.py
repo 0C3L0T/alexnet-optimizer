@@ -83,6 +83,11 @@ def parseLine(line: str):
     if len(outputStr) <= 1:
         return time, None
 
+    # remove buggy zero second latencies
+    for item in outputStr[:]:
+        if re.match(r's[123]_\w*:0\.0{6}$', item):
+            outputStr.remove(item)
+
     outputT = transpose(map(lambda x: x.split(':'), outputStr))
     outputT[1] = mapIntOrFloatOrString(outputT[1])
     return time, outputT
