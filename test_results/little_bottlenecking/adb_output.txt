@@ -1,0 +1,11 @@
+[1706016282.8595042] starting program
+[1706016282.8598368] Ok
+[1706016297.690437] pp1:1, pp2:8, order:L-G-B, s3_input:0.000000, s3_inference:0.000000, s1_input:0.048811, s1_inference:68.152901, s2_input:0.243945, s2_inference:82.181503, fps:12.132200,
+[1706016310.608295] pp1:1, pp2:2, order:B-L-G, s1_input:0.003817, s1_inference:24.928699, s2_input:0.208999, s2_inference:55.039600, s3_input:0.274251, s3_inference:73.198097, fps:13.610600,
+[1706016322.8716822] pp1:2, pp2:3, order:B-L-G, s1_input:0.002556, s1_inference:46.682899, s2_input:16.923901, s2_inference:29.592600, s3_input:0.291737, s3_inference:70.293503, fps:14.167300,
+[1706016334.690737] pp1:3, pp2:4, order:B-L-G, s1_input:0.003410, s1_inference:56.804199, s2_input:30.142000, s2_inference:26.314301, s3_input:0.366599, s3_inference:66.140900, fps:15.035900,
+[1706016344.35824] pp1:4, pp2:5, order:B-L-G, s1_input:0.001373, s1_inference:61.033901, s2_input:43.476398, s2_inference:17.090799, s3_input:0.149414, s3_inference:62.384998, fps:15.991200,
+[1706016357.80578] pp1:5, pp2:6, order:B-L-G, s1_input:0.001374, s1_inference:47.538601, s2_input:0.029106, s2_inference:79.562798, s3_input:43.709099, s3_inference:35.185101, fps:12.564100,
+[1706016370.696497] pp1:6, pp2:7, order:B-L-G, s1_input:0.001249, s1_inference:86.191597, s2_input:52.038601, s2_inference:33.145199, s3_input:67.249901, s3_inference:17.670000, fps:11.601900,
+[1706016383.995601] pp1:7, pp2:8, order:B-L-G, s3_input:0.000000, s3_inference:0.000000, s1_input:0.001135, s1_inference:103.348999, s2_input:92.910400, s2_inference:8.813370, fps:9.675820,
+[1706016383.9969752] ending program

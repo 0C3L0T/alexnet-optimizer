@@ -83,6 +83,11 @@ def parseLine(line: str):
     if len(outputStr) <= 1:
         return time, None
 
+    # remove buggy zero second latencies
+    for item in outputStr[:]:
+        if re.match(r's[123]_\w*:0\.0{6}$', item):
+            outputStr.remove(item)
+
     outputT = transpose(map(lambda x: x.split(':'), outputStr))
     outputT[1] = mapIntOrFloatOrString(outputT[1])
     return time, outputT
@@ -178,7 +183,8 @@ class Aggregator():
             self.tests = []
 
         processOutput = open(processOutputPath, "r")
-        powerOutput = open(powerOutputPath, "r")
+        if powerOutputPath:
+            powerOutput = open(powerOutputPath, "r")
 
         endTime = 0
         lastPowerDataPoint = []
@@ -190,6 +196,11 @@ class Aggregator():
                 continue
             perfDict = dict(transpose(perfData))
             perfDict['duration'] = endTime-startTime
+
+            if not powerOutputPath:
+                self.tests.append(perfDict)
+                continue
+
             powerData = []
             if lastPowerDataPoint:
                 powerData.append(powerDataPoint)
@@ -216,7 +227,8 @@ class Aggregator():
             output = perfDict | peakPowerDict | avgPowerDict
             self.tests.append(output)
 
-        powerOutput.close()
+        if powerOutputPath:
+            powerOutput.close()
         processOutput.close()
 
         if autoSplit:
