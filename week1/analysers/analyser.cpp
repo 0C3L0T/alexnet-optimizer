@@ -40,7 +40,7 @@ void initBigWithFreq(int freqTableIdx) {
 
 void runCNN(int partition_point, int partition_point2, const std::string& order) {
     char Run_Command[256];
-    sprintf(Run_Command, "./graph_alexnet_all_pipe_sync --threads=4  --threads2=2 --n=60 --total_cores=6 --partition_point=%d --partition_point2=%d --order=%s > output.txt", partition_point, partition_point2, order.c_str());
+    sprintf(Run_Command, "./graph_alexnet_all_pipe_sync --threads=4  --threads2=2 --n=60 --total_cores=6 --partition_point=%d --partition_point2=%d --order=%s | tee output.txt >> monitor.txt", partition_point, partition_point2, order.c_str());
     system(Run_Command);
 }
 
@@ -69,21 +69,23 @@ int main(int argc, char *argv[])
     initLittleWithFreq(0);
     initBigWithFreq(0);
 
-//    // Little Cluster at all Frequencies
-//    for(int i = 0; i < 9; i++) {
-//        initLittleWithFreq(i);
-//        runCNN(8, 8, "L-G-B");
-//        printFreq(LittleFrequencyTable[i], 0, 0);
-//        ParseResults();
-//    }
-//
-    // Big Cluster at all Frequencies
-    for(int i = 0; i < 11; i++) {
-        initBigWithFreq(i);
-        runCNN(8, 8, "B-L-G");
-        printFreq(0, BigFrequencyTable[i], 0);
+    // Little Cluster at all Frequencies
+    for(int i = 0; i < 9; i++) {
+        initLittleWithFreq(i);
+        runCNN(8, 8, "L-G-B");
+        printFreq(LittleFrequencyTable[i], 0, 0);
         ParseResults();
     }
+
+//    initLittleWithFreq(0);
+//
+//    // Big Cluster at all Frequencies
+//    for(int i = 0; i < 11; i++) {
+//        initBigWithFreq(i);
+//        runCNN(8, 8, "B-L-G");
+//        printFreq(0, BigFrequencyTable[i], 0);
+//        ParseResults();
+//    }
 //
 //    // GPU (with all Big Frequencies)
 //    for(int i = 0; i < 11; i++) {
@@ -110,13 +112,6 @@ int main(int argc, char *argv[])
   Also, there is memory-compute heterogeneity between the layers of the same types due to varying sizes of input, weights, and biases, which is quite interesting.
   Impact of CPU frequency on GPU. You are free to approach this complexity as you see fit.
   **/
-
-//    /* Run everything on Little, Big, and GPU separately. */
-//    std::array<std::string, 3> orders = {"L-G-B", "B-L-G", "G-B-L"};
-//    for(const auto& order : orders) {
-//        runCNN(8, 8, order);
-//        ParseResults();
-//    }
 
   cout << "ending program" << endl;
 }
