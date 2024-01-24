@@ -69,3 +69,16 @@ We can make a bunch of measurements and use those to train the network.
 2. figure out how to implement it
 3. write the governor (in kernel space)
 4. write the report
+
+The CNN inference happens in the user space. Therefore, the
+information when a CNN layer starts/finishes execution is only
+available in the user space. This information must get passed
+down to the kernel space to perform synchronized layer-wise
+DVFS with minimal overhead. We embed ioctl calls (written
+in C/C++) at the start of the execution of every CNN layer
+in ARM-CL that signal the execution frequency for the layer’s
+preferred HMPSoC component. A custom power Governor of
+our design (embedded within the kernel source code) receives
+this signal in the kernel space. It then sets the frequency of the
+preferred HMPSoC component to the value within the received
+signal.
