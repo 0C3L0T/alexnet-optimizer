@@ -178,7 +178,8 @@ class Aggregator():
             self.tests = []
 
         processOutput = open(processOutputPath, "r")
-        powerOutput = open(powerOutputPath, "r")
+        if powerOutputPath:
+            powerOutput = open(powerOutputPath, "r")
 
         endTime = 0
         lastPowerDataPoint = []
@@ -190,6 +191,11 @@ class Aggregator():
                 continue
             perfDict = dict(transpose(perfData))
             perfDict['duration'] = endTime-startTime
+
+            if not powerOutputPath:
+                self.tests.append(perfDict)
+                continue
+
             powerData = []
             if lastPowerDataPoint:
                 powerData.append(powerDataPoint)
@@ -216,7 +222,8 @@ class Aggregator():
             output = perfDict | peakPowerDict | avgPowerDict
             self.tests.append(output)
 
-        powerOutput.close()
+        if powerOutputPath:
+            powerOutput.close()
         processOutput.close()
 
         if autoSplit:

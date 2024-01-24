@@ -69,21 +69,21 @@ int main(int argc, char *argv[])
     initLittleWithFreq(0);
     initBigWithFreq(0);
 
-//    // Little Cluster at all Frequencies
-//    for(int i = 0; i < 9; i++) {
-//        initLittleWithFreq(i);
-//        runCNN(8, 8, "L-G-B");
-//        printFreq(LittleFrequencyTable[i], 0, 0);
-//        ParseResults();
-//    }
+   // Little Cluster at all Frequencies
+   for(int i = 0; i < 11; i++) {
+       initLittleWithFreq(i);
+       runCNN(8, 8, "L-G-B");
+       printFreq(LittleFrequencyTable[i], 0, 0);
+       ParseResults();
+   }
 //
-    // Big Cluster at all Frequencies
-    for(int i = 0; i < 11; i++) {
-        initBigWithFreq(i);
-        runCNN(8, 8, "B-L-G");
-        printFreq(0, BigFrequencyTable[i], 0);
-        ParseResults();
-    }
+    // // Big Cluster at all Frequencies
+    // for(int i = 0; i < 11; i++) {
+    //     initBigWithFreq(i);
+    //     runCNN(8, 8, "B-L-G");
+    //     printFreq(0, BigFrequencyTable[i], 0);
+    //     ParseResults();
+    // }
 //
 //    // GPU (with all Big Frequencies)
 //    for(int i = 0; i < 11; i++) {
@@ -103,6 +103,22 @@ int main(int argc, char *argv[])
 //        runCNN(5, 8, order);
 //        ParseResults();
 //    }
+
+    // // little bottleneck tests.
+    // initBigWithFreq(10);
+    // initLittleWithFreq(8);
+    // for(int i = 0; i < 8; i++) {
+    //     if (!i) {
+    //         runCNN(1,8, "L-G-B");
+    //     }
+    //     else
+    //     {
+    //         runCNN(i, i+1, "B-L-G");
+    //     }
+    //     ParseResults();
+    // }
+
+
 
   /**
   For example, the behaviour of Three-Partition configurations needs to be understood.
