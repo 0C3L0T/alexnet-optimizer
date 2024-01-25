@@ -15,7 +15,7 @@ class ComponentType(Enum):
 
 LittleFrequency = [500000, 667000, 1000000, 1200000, 1398000, 1512000, 1608000, 1704000, 1800000]
 
-BigFrequency = [500000, 667000, 1000000, 1200000, 1398000, 1512000, 1608000, 1704000, 1800000, 1908000, 2016000] # last two not used
+BigFrequency = [500000, 667000, 1000000, 1200000, 1398000, 1512000, 1608000, 1704000, 1800000, 1908000, 2016000, 2100000, 2208000] # last two not used
 
 
 # @dataclass
@@ -28,9 +28,9 @@ BigFrequency = [500000, 667000, 1000000, 1200000, 1398000, 1512000, 1608000, 170
 @dataclass
 class Chromosome:
     """A chromosome is a list of 11 genes."""
-    stage1_part: ComponentType
-    stage2_part: ComponentType
-    stage3_part: ComponentType
+    # stage1_part: ComponentType
+    # stage2_part: ComponentType
+    # stage3_part: ComponentType
 
     # if pp1 = pp2 = NETWORK_size, then there is one stage
     # if pp1 = pp2 != NETWORK_size, then there are two stages
@@ -60,9 +60,9 @@ def create_random_chromosome() -> Chromosome:
     # shuffle(components)
 
     return Chromosome(
-        components[0],
-        components[1],
-        components[2],
+        # ComponentType.BIG,
+        # ComponentType.GPU,
+        # ComponentType.LITTLE,
         partitionPoint_1,
         partitionPoint_2,
         little_frequency,
