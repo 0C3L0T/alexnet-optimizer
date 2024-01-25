@@ -82,24 +82,60 @@ def initialize_population(population_size: int) -> typing.List[Chromosome]:
 
 def crossover(a: Chromosome, b: Chromosome) -> Chromosome:
     """Performs crossover between two chromosomes."""
-    # how would we do partition points?
-    return Chromosome([], 0, 0)
+
+    if randint(0, 100) < 50:
+        # take partition points from a and frequencies from b
+        return Chromosome(
+            a.stage1_part,  # stages don't change
+            a.stage2_part,
+            a.stage3_part,
+            a.partitionPoint_1,
+            a.partitionPoint_2,
+            b.little_frequency,
+            b.big_frequency
+        )
+    else:
+        # take partition points from b and frequencies from a
+        return Chromosome(
+            b.stage1_part,  # stages don't change
+            b.stage2_part,
+            b.stage3_part,
+            b.partitionPoint_1,
+            b.partitionPoint_2,
+            a.little_frequency,
+            a.big_frequency
+        )
 
 
 def mutate(individual: Chromosome, mutation_rate) -> Chromosome:
-    """Performs mutation on a chromosome."""
+    """Performs mutation on a chromosome. Takes a mutation rate 0-100"""
 
     # partition point mutation
     if randint(0, 100) < mutation_rate:
-        mutate_partition_point(individual)
+        individual = mutate_partition_point(individual, mutation_rate)
 
     # frequency mutation
     if randint(0, 100) < mutation_rate:
-        mutate_frequency(individual)
+        individual = mutate_frequency(individual)
+
+    return individual
 
 
-def mutate_partition_point(individual: Chromosome) -> Chromosome:
-    pass
+def mutate_partition_point(individual: Chromosome, mutation_rate: int) -> Chromosome:
+    """Mutates the partition point of a chromosome."""
+    # random partition point where p2 > p1
+
+    if individual.partitionPoint_1 == individual.partitionPoint_2 == NETWORK_SIZE:
+        # there is one stage, keep it
+        return individual
+
+    if individual.partitionPoint_1 == individual.partitionPoint_2 != NETWORK_SIZE:
+        # there are two stages, move the partition point
+        individual.partitionPoint_1 =
+
+
+
+
 
 
 def mutate_frequency(individual: Chromosome) -> Chromosome:
