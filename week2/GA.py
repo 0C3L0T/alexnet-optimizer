@@ -3,14 +3,14 @@ from dataclasses import dataclass
 from enum import Enum
 from random import randrange, randint, shuffle
 
-NETWORK_SIZE = 11
+NETWORK_SIZE = 8
 
 
 class ComponentType(Enum):
     """The type of component."""
-    LITTLE = 1
-    BIG = 2
-    GPU = 3
+    BIG = 1
+    GPU = 2
+    LITTLE = 3
 
 
 LittleFrequency = [500000, 667000, 1000000, 1200000, 1398000, 1512000, 1608000, 1704000, 1800000]
@@ -18,45 +18,56 @@ LittleFrequency = [500000, 667000, 1000000, 1200000, 1398000, 1512000, 1608000, 
 BigFrequency = [500000, 667000, 1000000, 1200000, 1398000, 1512000, 1608000, 1704000, 1800000, 1908000, 2016000] # last two not used
 
 
-@dataclass
-class Gene:
-    """A gene is a single item in a chromosome. It corrsponds to a single layer in the network."""
-    componentType: ComponentType
-    frequency: int
+# @dataclass
+# class Gene:
+#     """A gene is a single item in a chromosome. It corresponds to a single layer in the network."""
+#     componentType: ComponentType
+#     frequency: int
 
 
 @dataclass
 class Chromosome:
     """A chromosome is a list of 11 genes."""
-    genes: typing.List[Gene]
+    stage1_part: ComponentType
+    stage2_part: ComponentType
+    stage3_part: ComponentType
+
+    # if pp1 = pp2 = NETWORK_size, then there is one stage
+    # if pp1 = pp2 != NETWORK_size, then there are two stages
+    # if pp1 < pp2, then there are three stages
+    partitionPoint_1: int
+    partitionPoint_2: int
+
+    # if the GPU is in the pipeline, it will be on
+    little_frequency: int
+    big_frequency: int
 
 
 def create_random_chromosome() -> Chromosome:
     """Create a random chromosome, make sure that the order of the components is consistent"""
-    genes = []
 
     # random partition point where p2 > p1
-    partitionPoint_1 = randrange(0, NETWORK_SIZE - 1)
-    partitionPoint_2 = randrange(partitionPoint_1, NETWORK_SIZE - 1)
+    partitionPoint_1 = randint(1, NETWORK_SIZE - 1)
+    partitionPoint_2 = randint(partitionPoint_1, NETWORK_SIZE - 1)
 
-    # genes with random frequencies
-    geneLittle = Gene(ComponentType.LITTLE, LittleFrequency[randrange(0, len(LittleFrequency) - 1)])
-    geneBig = Gene(ComponentType.BIG, BigFrequency[randrange(0, len(BigFrequency) - 1)])
-    geneGPU = Gene(ComponentType.GPU, randint(0, 1))
+    # random frequencies
+    little_frequency = LittleFrequency[randint(0, len(LittleFrequency) - 1)]
+    big_frequency = BigFrequency[randint(0, len(BigFrequency) - 1)]
+
+    components = list(ComponentType)
 
     # random order of components
-    components = [geneLittle, geneBig, geneGPU]
-    shuffle(components)
+    # shuffle(components)
 
-    # add genes to chromosome
-    for _ in range(0, partitionPoint_1):
-        genes.append(components[0])
-    for _ in range(partitionPoint_1, partitionPoint_2):
-        genes.append(components[1])
-    for _ in range(partitionPoint_2, NETWORK_SIZE):
-        genes.append(components[2])
-
-    return Chromosome(genes)
+    return Chromosome(
+        components[0],
+        components[1],
+        components[2],
+        partitionPoint_1,
+        partitionPoint_2,
+        little_frequency,
+        big_frequency
+    )
 
 
 def initialize_population(population_size: int) -> typing.List[Chromosome]:
@@ -69,15 +80,30 @@ def initialize_population(population_size: int) -> typing.List[Chromosome]:
     return population
 
 
-def crossover(chromosome1: Chromosome, chromosome2: Chromosome) -> Chromosome:
+def crossover(a: Chromosome, b: Chromosome) -> Chromosome:
     """Performs crossover between two chromosomes."""
-    crossover_point = randint(0, len(chromosome1.genes) - 1)
-    child = Chromosome(chromosome1.genes[:crossover_point] + chromosome2.genes[crossover_point:])
-    return child
+    # how would we do partition points?
+    return Chromosome([], 0, 0)
 
 
-def mutate(chromosome: Chromosome) -> Chromosome:
+def mutate(individual: Chromosome, mutation_rate) -> Chromosome:
     """Performs mutation on a chromosome."""
+
+    # partition point mutation
+    if randint(0, 100) < mutation_rate:
+        mutate_partition_point(individual)
+
+    # frequency mutation
+    if randint(0, 100) < mutation_rate:
+        mutate_frequency(individual)
+
+
+def mutate_partition_point(individual: Chromosome) -> Chromosome:
+    pass
+
+
+def mutate_frequency(individual: Chromosome) -> Chromosome:
+    pass
 
 def fitness(chromosome: Chromosome) -> float:
     """Computes the fitness of a chromosome."""
