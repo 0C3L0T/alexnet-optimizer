@@ -31,6 +31,7 @@ class Gene:
 class Chromosome:
     """A chromosome is a list of 11 genes."""
     genes: typing.List[Gene]
+    fitness: float = 0.0
 
     def __getitem__(self, item):
         return self.genes[item]
@@ -147,6 +148,98 @@ def mutate_frequency(individual: Chromosome) -> Chromosome:
     return individual
 
 
-def fitness(chromosome: Chromosome) -> float:
-    """Computes the fitness of a chromosome."""
-    return 0.0
+def fitness(assessor, chromosome: Chromosome) -> float:
+    """Computes the fitness of a chromosome. assessor will be a function pointer"""
+    return assessor.assess(chromosome)
+
+
+def partition(arr: typing.List[Chromosome], low: int, high: int) -> int:
+    """This function takes last element as pivot, places the pivot element at its correct position in sorted array,
+    and places all smaller (smaller than pivot) to left of pivot and all greater elements to right of pivot"""
+
+    i = (low - 1)  # index of smaller element
+    pivot = arr[high].fitness  # pivot
+
+    for j in range(low, high):
+
+        # If current element is smaller than the pivot
+        if arr[j].fitness > pivot:
+
+            # increment index of smaller element
+            i = i + 1
+
+            # swap
+            arr[i], arr[j] = arr[j], arr[i]
+
+    # swap
+    arr[i + 1], arr[high] = arr[high], arr[i + 1]
+
+    return i + 1
+
+
+def quicksort(population: typing.List[Chromosome], low: int, high: int) -> typing.List[Chromosome]:
+    """quick sorts a population in descending order of fitness"""
+
+    if low < high:
+        # pi is partitioning index, arr[p] is now at right place
+        pi = partition(population, low, high)
+
+        # Separately sort elements before partition and after partition
+        quicksort(population, low, pi - 1)
+        quicksort(population, pi + 1, high)
+
+    return population
+
+
+def selection(population: typing.List[Chromosome], assesor) -> typing.List[Chromosome]:
+    """Selects the best chromosomes from a population."""
+
+    # compute fitness
+    for individual in population:
+        individual.fitness = fitness(assesor, individual)
+
+    # sort by fitness
+    sorted_population = quicksort(population, 0, len(population) - 1)
+
+    # return the best half
+    return sorted_population[:len(population) // 2]
+
+
+@dataclass
+class Assessor:
+    """Assesses a chromosome. Placeholder."""
+
+    def assess(self, chromosome: Chromosome) -> float:
+        """Assesses a chromosome."""
+        pass
+
+
+def genetic_algorithm(population_size: int, mutation_rate: int, iterations: int) -> Chromosome:
+    """Runs the genetic algorithm."""
+
+    # initialize population
+    population = initialize_population(population_size)
+
+    # initialize assessor
+    assessor = Assessor()  # function pointer
+
+    # run for n iterations
+    for _ in range(iterations):
+
+        # select parents
+        parents = selection(population, assessor)
+
+        # create children
+        children = []
+        for i in range(population_size // 2):
+            children.append(crossover(parents[i], parents[population_size - i - 1]))
+
+        # mutate children
+        for i in range(population_size):
+            children[i] = mutate(children[i], mutation_rate)
+
+        # select survivors
+        population = selection(children, assessor)
+
+    # return best chromosome
+    return population[0]
