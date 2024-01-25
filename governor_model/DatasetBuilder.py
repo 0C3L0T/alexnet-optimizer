@@ -57,7 +57,7 @@ def exportPower():
             return
         data.append([pp1,pp2,bfreq,lfreq,power])
 
-    with open("training_data/s1_perf_data.txt") as f:
+    with open("training_data/power_data.txt") as f:
         f.write("\n".join([" ".join(sample) for sample in data]))
 
 

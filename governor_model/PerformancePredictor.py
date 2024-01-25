@@ -5,6 +5,10 @@ import numpy as np
 import copy
 import matplotlib.pyplot as plt
 from itertools import accumulate
+from GA import Chromosome
+
+freqLevels = [500000, 667000, 1000000, 1200000, 1398000, 1512000, 1608000,
+              1704000, 1800000, 1908000, 2016000, 2100000, 2208000]
 
 # INPUT FEATURES:
 #
@@ -109,21 +113,23 @@ def train(stage, n_epochs=50, batch_size=20):
 
 # should port
 def predict_stage(stage, X):
-    model.load_state_dict(torch.load("weights/s{stage}_weights.txt"))
+    model.load_state_dict(torch.load(f"weights/s{stage}_weights.txt"))
     model.eval()
 
-    return model(X)
+    return float(model(X))
 
 # should port
-def predictPerformance(chromosome):
-    pp1 = chromosome[0].size
-    pp2 = pp1 + chromosome[1].size
-    X1 = pp2B(pp1, pp2, 1) + [chromosome[0].freq]
-    X2 = pp2B(pp1, pp2, 2) + [chromosome[0].freq]
-    X3 = pp2B(pp1, pp2, 3) + [chromosome[2].freq]
+def predict_performance(chromosome: Chromosome) -> tuple[float]:
+    pp1 = chromosome[0].layers
+    pp2 = pp1 + chromosome[1].layers
+    bfreq = freqLevels[chromosome[0].frequency_level]
+    lfreq = freqLevels[chromosome[2].frequency_level]
+    X1 = pp2B(pp1, pp2, 1) + [bfreq]
+    X2 = pp2B(pp1, pp2, 2) + [bfreq]
+    X3 = pp2B(pp1, pp2, 3) + [lfreq]
     inf_lat1 = predict_stage(1, X1)
     inf_lat2 = predict_stage(2, X2)
     inf_lat3 = predict_stage(3, X3)
     total_lat = sum(accumulate([inf_lat1, inf_lat2, inf_lat3], max))
-    fps = 1/max(inf_lat1, inf_lat2, inf_lat3)
-    return total_lat, fps
+    max_lat = max(inf_lat1, inf_lat2, inf_lat3)
+    return total_lat, max_lat
