@@ -1,7 +1,7 @@
 import typing
 from dataclasses import dataclass
 from enum import Enum
-from random import randrange, randint, shuffle
+from random import randint
 
 NETWORK_SIZE = 8
 
@@ -15,58 +15,51 @@ class ComponentType(Enum):
 
 LittleFrequency = [500000, 667000, 1000000, 1200000, 1398000, 1512000, 1608000, 1704000, 1800000]
 
-BigFrequency = [500000, 667000, 1000000, 1200000, 1398000, 1512000, 1608000, 1704000, 1800000, 1908000, 2016000, 2100000, 2208000] # last two not used
+BigFrequency = [500000, 667000, 1000000, 1200000, 1398000, 1512000, 1608000, 1704000, 1800000, 1908000, 2016000,
+                2100000, 2208000]
 
 
-# @dataclass
-# class Gene:
-#     """A gene is a single item in a chromosome. It corresponds to a single layer in the network."""
-#     componentType: ComponentType
-#     frequency: int
+@dataclass
+class Gene:
+    """A gene is a single item in a chromosome. It corresponds to a single layer in the network."""
+    componentType: ComponentType
+    layers: int
+    frequency_level: int | None  # in case of GPU, frequency is None, index in respective frequency list otherwise
 
 
 @dataclass
 class Chromosome:
     """A chromosome is a list of 11 genes."""
-    # stage1_part: ComponentType
-    # stage2_part: ComponentType
-    # stage3_part: ComponentType
+    genes: typing.List[Gene]
 
-    # if pp1 = pp2 = NETWORK_size, then there is one stage
-    # if pp1 = pp2 != NETWORK_size, then there are two stages
-    # if pp1 < pp2, then there are three stages
-    partitionPoint_1: int
-    partitionPoint_2: int
+    def __getitem__(self, item):
+        return self.genes[item]
 
-    # if the GPU is in the pipeline, it will be on
-    little_frequency: int
-    big_frequency: int
+    def __setitem__(self, key, value):
+        self.genes[key] = value
 
 
 def create_random_chromosome() -> Chromosome:
     """Create a random chromosome, make sure that the order of the components is consistent"""
 
-    # random partition point where p2 > p1
-    partitionPoint_1 = randint(1, NETWORK_SIZE - 1)
-    partitionPoint_2 = randint(partitionPoint_1, NETWORK_SIZE - 1)
+    # random partition points in C
+    ran1 = randint(1, NETWORK_SIZE)
+    ran2 = randint(1, NETWORK_SIZE)
+    rans = [ran1, ran2]
+    order = int(ran1 > ran2)
+    pp1 = rans[order]
+    pp2 = rans[not order]
 
     # random frequencies
     little_frequency = LittleFrequency[randint(0, len(LittleFrequency) - 1)]
     big_frequency = BigFrequency[randint(0, len(BigFrequency) - 1)]
 
-    components = list(ComponentType)
-
-    # random order of components
-    # shuffle(components)
+    big_gene = Gene(ComponentType.BIG, pp1, big_frequency)
+    gpu_gene = Gene(ComponentType.GPU, pp2 - pp1, None)
+    little_gene = Gene(ComponentType.LITTLE, NETWORK_SIZE - pp2, little_frequency)
 
     return Chromosome(
-        # ComponentType.BIG,
-        # ComponentType.GPU,
-        # ComponentType.LITTLE,
-        partitionPoint_1,
-        partitionPoint_2,
-        little_frequency,
-        big_frequency
+        [big_gene, gpu_gene, little_gene]
     )
 
 
@@ -83,28 +76,11 @@ def initialize_population(population_size: int) -> typing.List[Chromosome]:
 def crossover(a: Chromosome, b: Chromosome) -> Chromosome:
     """Performs crossover between two chromosomes."""
 
-    if randint(0, 100) < 50:
-        # take partition points from a and frequencies from b
-        return Chromosome(
-            a.stage1_part,  # stages don't change
-            a.stage2_part,
-            a.stage3_part,
-            a.partitionPoint_1,
-            a.partitionPoint_2,
-            b.little_frequency,
-            b.big_frequency
-        )
-    else:
-        # take partition points from b and frequencies from a
-        return Chromosome(
-            b.stage1_part,  # stages don't change
-            b.stage2_part,
-            b.stage3_part,
-            b.partitionPoint_1,
-            b.partitionPoint_2,
-            a.little_frequency,
-            a.big_frequency
-        )
+    gene_1 = b.genes[0] if randint(0, 1) == 0 else a.genes[0]
+    gene_2 = b.genes[1] if randint(0, 1) == 0 else a.genes[1]
+    gene_3 = b.genes[2] if randint(0, 1) == 0 else a.genes[2]
+
+    return Chromosome([gene_1, gene_2, gene_3])
 
 
 def mutate(individual: Chromosome, mutation_rate) -> Chromosome:
@@ -112,7 +88,7 @@ def mutate(individual: Chromosome, mutation_rate) -> Chromosome:
 
     # partition point mutation
     if randint(0, 100) < mutation_rate:
-        individual = mutate_partition_point(individual, mutation_rate)
+        individual = mutate_layer_size(individual)
 
     # frequency mutation
     if randint(0, 100) < mutation_rate:
@@ -121,25 +97,55 @@ def mutate(individual: Chromosome, mutation_rate) -> Chromosome:
     return individual
 
 
-def mutate_partition_point(individual: Chromosome, mutation_rate: int) -> Chromosome:
+def mutate_layer_size(individual: Chromosome) -> Chromosome:
     """Mutates the partition point of a chromosome."""
-    # random partition point where p2 > p1
 
-    if individual.partitionPoint_1 == individual.partitionPoint_2 == NETWORK_SIZE:
-        # there is one stage, keep it
-        return individual
+    # get first or second gene
+    idx = randint(0, 1)
 
-    if individual.partitionPoint_1 == individual.partitionPoint_2 != NETWORK_SIZE:
-        # there are two stages, move the partition point
-        individual.partitionPoint_1 =
+    # amount of change
+    change = randint(-1, 1)
 
+    # beware of boundaries
+    if individual[idx].layers + change > NETWORK_SIZE or individual[idx].layers + change < 0:
+        change *= -1
 
+    # add change to one
+    individual[idx].layers += change
 
+    # subtract from the other, this will always work since the sum is always NETWORK_SIZE
+    individual[idx + 1].layers -= change
 
+    return individual
 
 
 def mutate_frequency(individual: Chromosome) -> Chromosome:
-    pass
+    """Mutates the frequency of a gene in a chromosome."""
+
+    # random gene
+    rand_idx = randint(0, 2)
+    gene = individual[rand_idx]
+
+    # GPU has no frequency to mutate
+    if gene.componentType == ComponentType.GPU:
+        return individual
+
+    # amount of change
+    change = randint(-1, 1)
+
+    # limit is the length of the frequency list
+    limit = gene.componentType == ComponentType.BIG and len(BigFrequency) or len(LittleFrequency)
+
+    # beware of boundaries
+    if gene.frequency_level + change > limit or gene.frequency_level + change < 0:
+        change *= -1
+
+    # apply change
+    gene.frequency_level += change
+    individual[rand_idx] = gene
+
+    return individual
+
 
 def fitness(chromosome: Chromosome) -> float:
     """Computes the fitness of a chromosome."""
