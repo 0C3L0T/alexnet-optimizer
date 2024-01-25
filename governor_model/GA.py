@@ -39,6 +39,15 @@ class Chromosome:
     def __setitem__(self, key, value):
         self.genes[key] = value
 
+    def __str__(self):
+        order = [self.genes[i].componentType for i in range(0, 2)]
+        pp1 = self.genes[0].layers
+        pp2 = pp1 + self.genes[1].layers
+        bigFreq = BigFrequency[self.genes[0].frequency_level]
+        littleFreq = LittleFrequency[self.genes[2].frequency_level]
+
+        return f"Order: {str(order)}, pp1:{pp1}, pp2:{pp2}, bigFreq:{bigFreq}, littleFreq:{littleFreq}"
+
 
 def create_random_chromosome() -> Chromosome:
     """Create a random chromosome, make sure that the order of the components is consistent"""
@@ -150,7 +159,7 @@ def mutate_frequency(individual: Chromosome) -> Chromosome:
 
 def fitness(assessor, chromosome: Chromosome) -> float:
     """Computes the fitness of a chromosome. assessor will be a function pointer"""
-    return assessor.assess(chromosome)
+    return assessor.assess(chromosome.__str__())
 
 
 def partition(arr: typing.List[Chromosome], low: int, high: int) -> int:
@@ -164,7 +173,6 @@ def partition(arr: typing.List[Chromosome], low: int, high: int) -> int:
 
         # If current element is smaller than the pivot
         if arr[j].fitness > pivot:
-
             # increment index of smaller element
             i = i + 1
 
