@@ -6,6 +6,12 @@ from dataclasses import dataclass
 from enum import Enum
 from random import randint
 
+# HYPERPARAMETERS WE SHOULD TEST
+LATENCY_PENALTY = 100
+FPS_PENALTY = 100
+POPULATION_SIZE = 10
+
+
 NETWORK_SIZE = 8
 SGN = lambda x: (0 < x) - (x < 0)
 ABS = lambda x: x if (x >= 0) else -x
@@ -29,6 +35,7 @@ class Gene:
     componentType: ComponentType
     layers: int
     frequency_level: int | None  # in case of GPU, frequency is None, index in respective frequency list otherwise
+
 
 @dataclass
 class Chromosome:
@@ -75,6 +82,7 @@ def create_random_chromosome() -> Chromosome:
         [big_gene, gpu_gene, little_gene]
     )
 
+
 def initialize_population(population_size: int, assessor) -> typing.List[Chromosome]:
     """Initialize a population of chromosomes."""
     population = []
@@ -86,8 +94,10 @@ def initialize_population(population_size: int, assessor) -> typing.List[Chromos
 
     return population
 
+
 def layer_err(a: Chromosome) -> int:
-    return a.genes[0].layers + a.genes[1].layers + a.genes[2].layers - 8
+    return a.genes[0].layers + a.genes[1].layers + a.genes[2].layers - NETWORK_SIZE
+
 
 def cure_child_cancer(child: Chromosome):
     while layer_err(child):    # in C: while (int err = sgn(layer_err(child1)))
@@ -139,7 +149,7 @@ def mutate_layer_size(individual: Chromosome) -> Chromosome:
     # amount of change
     change = randint(-1, 1)
     while randint(0,99) < 20: # !(rand() % 5) (20% chance to go further)
-            change += 1 * SGN(change)
+            change += SGN(change)
             if ABS(change) > 2: # limit to ±3
                 break
 
@@ -178,7 +188,7 @@ def mutate_frequency(individual: Chromosome) -> Chromosome:
     change = randint(-1, 1)
 
     # limit is the length of the frequency list
-    limit = gene.componentType == ComponentType.BIG and len(BigFrequency) or len(LittleFrequency)
+    limit = gene.componentType == ComponentType.IBG and len(BigFrequency) or len(LittleFrequency)
 
     # beware of boundaries
     if gene.frequency_level + change > limit or gene.frequency_level + change < 0:
@@ -190,14 +200,17 @@ def mutate_frequency(individual: Chromosome) -> Chromosome:
 
     return individual
 
+
 def fitness(assessor, chromosome: Chromosome) -> float:
     """Computes the fitness of a chromosome. assessor will be a function pointer"""
     return assessor.assess(chromosome)
+
 
 def assess_population(population: typing.List[Chromosome], size: int, assessor) -> None:
     """Computes the fitness of an entire population."""
     for i in range(size):
         population[i].fitness = fitness(population[i], assessor)
+
 
 def partition(arr: typing.List[Chromosome], low: int, high: int) -> int:
     """This function takes last element as pivot, places the pivot element at its correct position in sorted array,
@@ -254,6 +267,7 @@ def shuffle(array, n):
         arr[i],arr[j] = arr[j],arr[i]
     return arr
 
+
 def bt_selection(population: typing.List[Chromosome], n: int) -> typing.List[typing.Tuple(Chromosome)]:
     """Selects n individuals from a population using binary tournament selection"""
     if (n % 2):
@@ -268,6 +282,7 @@ def bt_selection(population: typing.List[Chromosome], n: int) -> typing.List[typ
         pairs.append((parent1, parent2))
 
     return pairs
+
 
 @dataclass
 class Assessor:
@@ -302,7 +317,7 @@ def genetic_algorithm(population_size: int, #mutation_rate: int,
     """Runs the genetic algorithm."""
     end_time = time() + time_limit
     # initialize assessor
-    assessor = Assessor(target_latency, target_fps, 50, 50)  # function pointer
+    assessor = Assessor(target_latency, target_fps, LATENCY_PENALTY, FPS_PENALTY)  # function pointer
                                                   # ^ play around with these values!
 
     # initialize population
@@ -343,5 +358,5 @@ def genetic_algorithm(population_size: int, #mutation_rate: int,
     population = selection(population, population_size)
     if save:
         with open("ga_population.txt") as f:
-            f.write("\n".join([chro.__repr__() for chro in population]))
+            f.write("\n".join([chro.__str__() for chro in population]))
     return population[0]
