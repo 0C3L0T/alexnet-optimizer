@@ -1,34 +1,60 @@
-from GA import Chromosome
-
 from DatasetBuilder import importDataset, pp2B
 import torch.nn as nn
 import torch
 import numpy as np
 import copy
 import matplotlib.pyplot as plt
-from itertools import accumulate
-from GA import Chromosome
 
 freqLevels = [500000, 667000, 1000000, 1200000, 1398000, 1512000, 1608000,
               1704000, 1800000, 1908000, 2016000, 2100000, 2208000]
 
 ## HYPERPARAMETERS WE SHOULD TEST:
 N_EPOCHS = 50
-BATCH_SIZE = 20,
+BATCH_SIZE = 20
 LEARNING_RATE = 1e-4
 
 # INPUT FEATURES:
 #
-#   - partition point 1 int
-#   - partition point 2 int
-#   - lfrequency int
-#   - bfrequency int
+#   - partition point 1
+#   - partition point 2
+#   - bfrequency
+#   - bfrequency**2
+#   - lfrequency
+#   - lfrequency**2
+
+## other possible architectures:
+#   nn option 2:
+#   - s1 size
+#   - s2 size
+#   - s3 size
+#   - bfrequency
+#   - bfrequency**2
+#   - lfrequency
+#   - lfrequency**2
 #
+#   nn option 3:
+#   -*binary layers s1
+#   -*binary layers s2
+#   -*binary layers s3
+#   - bfrequency
+#   - bfrequency**2
+#   - lfrequency
+#   - lfrequency**2
+#
+#   m1:
+#   like perf s1 but with bfrequency**2
+#   m2:
+#   like perf s2 but with bfrequency**2
+#   m3:
+#   like perf s3 but with lfrequency**2
+#
+#   nn option 4:
+#   m1, m2, m3 simulataneously to 3 outputs -> Activation() -> linear(3,1)
 
 
 # should port
 model = nn.Sequential(
-    nn.Linear(4, 16),
+    nn.Linear(6, 16),
     nn.ReLU(),
     nn.Linear(16, 8),
     nn.ReLU(),
@@ -39,7 +65,7 @@ model = nn.Sequential(
 
 
 # should not port
-def train(n_epochs=50, batch_size=20, lr=0.0001):
+def train(n_epochs=5000, batch_size=20, lr=0.0001):
     X_train, y_train, X_test, y_test = importDataset()
 
     loss_fn = nn.MSELoss()  # mean square error
@@ -70,7 +96,7 @@ def train(n_epochs=50, batch_size=20, lr=0.0001):
             loss.backward()
             optimizer.step()
 
-            if batch_n % 100 == 0:
+            if batch_n % 5 == 0:
                 loss, current = loss.item(), (batch_n + 1) * batch_size
                 print(f"loss: {loss:>7f}  [{current:>5d}/{len(X_train):>5d}]")
 
@@ -96,7 +122,7 @@ def train(n_epochs=50, batch_size=20, lr=0.0001):
 
 
 # should port
-def predict_power(chromosome: Chromosome) -> tuple[float]:
+def predict_power(chromosome) -> tuple[float]:
     pp1 = chromosome[0].layers
     pp2 = pp1 + chromosome[1].layers
     bfreq = freqLevels[chromosome[0].frequency_level]
