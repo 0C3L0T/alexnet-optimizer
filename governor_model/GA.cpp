@@ -294,14 +294,14 @@ chromosome genetic_algorithm(int population_size, // HAS TO BE EVEN
         // override original population with new population
         for (int i = 0; i < population_size/2; i++) {
             *population[i] = *parents[i];
-            *population[i *2] = *best_half[i];
+            *population[population_size - 1 - i] = *best_half[i];
         }
 
         // mutate winners of tournament
-        for (int i = 0; i < population_size/2; i++) {
-            crossover(parents[i * 2], parents[i * 2 + 1]);
-            mutate(parents[i * 2]);
-            mutate(parents[i * 2 + 1]);
+        for (int i = 0; i < population_size/2; i+2) {
+            crossover(population[i], population[i + 1]);
+            mutate(population[i]);
+            mutate(population[i + 1]);
         }
 
         asses_population(population, population_size, fitness);
