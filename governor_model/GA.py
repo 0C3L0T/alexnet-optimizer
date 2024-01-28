@@ -406,6 +406,15 @@ def genetic_algorithm(population_size: int, #mutation_rate: int,
             f.write("\n".join([chro.__str__() for chro in population]))
     return population[0]
 
+def chromosome_to_config(chromosome: Chromosome):
+    """
+    Chromosome -> pp1, pp2, bfreq, lfreq
+    """
+    pp1 = chromosome[0].layers
+    pp2 = pp1 + chromosome[1].layers
+    bfreq = BigFrequency[chromosome[0].frequency_level]
+    lfreq = LittleFrequency[chromosome[2].frequency_level]
+    return pp1, pp2, bfreq, lfreq
 
 # dbg
 if __name__ == "__main__":
