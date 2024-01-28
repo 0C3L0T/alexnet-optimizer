@@ -1,4 +1,4 @@
-from DatasetBuilder import importPerformance, pp2B
+from DatasetBuilder import importDataset, pp2B
 import torch.nn as nn
 import torch
 import numpy as np
@@ -9,6 +9,11 @@ from GA import Chromosome
 
 freqLevels = [500000, 667000, 1000000, 1200000, 1398000, 1512000, 1608000,
               1704000, 1800000, 1908000, 2016000, 2100000, 2208000]
+
+## HYPERPARAMETERS WE SHOULD TEST:
+N_EPOCHS = 50
+BATCH_SIZE = 20,
+LEARNING_RATE = 1e-4
 
 # INPUT FEATURES:
 #
@@ -55,12 +60,13 @@ model = nn.Sequential(
     nn.Linear(6, 1)
 )
 
+
 # should not port
-def train(stage, n_epochs=50, batch_size=20):
-    X_train, y_train, X_test, y_test = importPerformance(stage)
+def train(stage, n_epochs=50, batch_size=20, lr=0.0001):
+    X_train, y_train, X_test, y_test = importDataset(stage=stage)
 
     loss_fn = nn.MSELoss()  # mean square error
-    optimizer = torch.optim.Adam(model.parameters(), lr=0.0001)
+    optimizer = torch.optim.Adam(model.parameters(), lr=lr)
 
     batch_positions = np.arange(0, len(X_train), batch_size)
 
@@ -111,12 +117,14 @@ def train(stage, n_epochs=50, batch_size=20):
     plt.plot(history)
     plt.show()
 
+
 # should port
 def predict_stage(stage, X):
     model.load_state_dict(torch.load(f"weights/s{stage}_weights.txt"))
     model.eval()
 
     return float(model(X))
+
 
 # should port
 def predict_performance(chromosome: Chromosome) -> tuple[float]:
@@ -133,3 +141,9 @@ def predict_performance(chromosome: Chromosome) -> tuple[float]:
     total_lat = sum(accumulate([inf_lat1, inf_lat2, inf_lat3], max))
     max_lat = max(inf_lat1, inf_lat2, inf_lat3)
     return total_lat, max_lat
+
+
+if __name__ == "__main__":
+    train(1, N_EPOCHS, BATCH_SIZE, LEARNING_RATE)
+    train(2, N_EPOCHS, BATCH_SIZE, LEARNING_RATE)
+    train(3, N_EPOCHS, BATCH_SIZE, LEARNING_RATE)

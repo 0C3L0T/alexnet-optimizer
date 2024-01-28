@@ -2,6 +2,7 @@ from measurementAggregator import Aggregator
 
 LAYERS = 8
 
+
 def pp2B(pp1, pp2, stage):
     if stage == 1:
         return [1]*(pp1-1)+[0]*(LAYERS-pp1)
@@ -9,6 +10,7 @@ def pp2B(pp1, pp2, stage):
         return [0]*(pp1-1)+[1]*(pp2-pp1)+[0]*(LAYERS-pp2)
     if stage == 3:
         return [0]*(pp2-1)+[1]*(LAYERS-pp2)
+
 
 def exportPerformance():
     a = Aggregator()
@@ -38,6 +40,7 @@ def exportPerformance():
     with open("training_data/s3_perf_data.txt") as f:
         f.write("\n".join([" ".join(sample) for sample in s3_data]))
 
+
 def exportPower():
     a = Aggregator()
     # a.aggregate("training_data/pwrData.txt", None)
@@ -61,14 +64,18 @@ def exportPower():
         f.write("\n".join([" ".join(sample) for sample in data]))
 
 
-def importPerformance(stage:int, train_size=0.7):
+def importDataset(train_size=0.7, stage: int = None):
     from sklearn.model_selection import train_test_split
     import torch
     import numpy as np
 
     # train-test split for model evaluation
-    f = open(f"training_data/s{stage}_perf_data.txt")
-    *X, y = np.loadtxt(f"training_data/s{stage}_perf_data.txt", unpack=True)
+    if stage:
+        file = f"s{stage}_perf_data.txt"
+    else:
+        file = f"power.txt"
+
+    *X, y = np.loadtxt(f"training_data/{file}", unpack=True)
     X = np.array(X)
     X_train, X_test, y_train, y_test = train_test_split(X, y, train_size=train_size, shuffle=True)
 
