@@ -1,10 +1,11 @@
 import typing
-from PerformancePredictor import predict_performance
+from PerformancePredictor import predict_performance, build_perf_predictors
 from PowerPredictor import predict_power
 from time import time
 from dataclasses import dataclass
 from enum import Enum
 from random import randint
+from numpy import inf
 
 # HYPERPARAMETERS WE SHOULD TEST
 LATENCY_PENALTY = 100
@@ -50,13 +51,14 @@ class Chromosome:
         self.genes[key] = value
 
     def __str__(self):
-        order = [self.genes[i].componentType for i in range(0, 2)]
-        pp1 = self.genes[0].layers
-        pp2 = pp1 + self.genes[1].layers
-        bigFreq = BigFrequency[self.genes[0].frequency_level]
-        littleFreq = LittleFrequency[self.genes[2].frequency_level]
+        # order = [self.genes[i].componentType for i in range(0, 3)]
+        l1 = self.genes[0].layers
+        l2 = self.genes[1].layers
+        l3 = self.genes[2].layers
+        bigFreqlv = self.genes[0].frequency_level    #note: order hardcoded
+        littleFreqLv = self.genes[2].frequency_level
 
-        return f"Order: {str(order)}, pp1:{pp1}, pp2:{pp2}, bigFreq:{bigFreq}, littleFreq:{littleFreq}"
+        return f"L1:{l1}, L2:{l2}, L3:{l3}, bigFreqLv:{bigFreqlv}, littleFreqLv:{littleFreqLv}"
 
 
 def create_random_chromosome() -> Chromosome:
@@ -82,14 +84,48 @@ def create_random_chromosome() -> Chromosome:
         [big_gene, gpu_gene, little_gene]
     )
 
+def parse_chromosome(string_rep: str):
+    dict_ = dict([tuple(gene.split(":")) for gene in string_rep.split(", ")])
+    for k,v in dict_.items():
+        dict_[k] = int(v)
 
-def initialize_population(population_size: int, assessor) -> typing.List[Chromosome]:
+    # component_names = dict_["Order"]
+    # components = [ComponentType[component] for component in component_names]
+    l1 = dict_["L1"]
+    l2 = dict_["L2"]
+    l3 = dict_["L3"]
+    b_freq = dict_["bigFreqLv"]
+    l_freq = dict_["littleFreqLv"]
+    big_gene = Gene(ComponentType.BIG, l1, b_freq)
+    gpu_gene = Gene(ComponentType.GPU, l2, None)
+    little_gene = Gene(ComponentType.LITTLE, l3, l_freq)
+
+    return Chromosome(
+        [big_gene, gpu_gene, little_gene]
+    )
+
+
+def load_population(filepath: str) -> typing.List[Chromosome]:
+    population = []
+    with open(filepath, "r") as f:
+        f.readline()
+        for line in f:
+            population.append(parse_chromosome(line.strip()))
+    return population
+
+
+def initialize_population(population_size: int, assessor = None, import_path: str = None) -> typing.List[Chromosome]:
     """Initialize a population of chromosomes."""
+
+    if import_path:
+        return load_population(import_path)
+
     population = []
 
     for _ in range(population_size):
         individual = create_random_chromosome()
-        individual.fitness = fitness(assessor, individual)
+        if assessor:
+            individual.fitness = fitness(assessor, individual)
         population.append(individual)
 
     return population
@@ -268,7 +304,7 @@ def shuffle(array, n):
     return arr
 
 
-def bt_selection(population: typing.List[Chromosome], n: int) -> typing.List[typing.Tuple(Chromosome)]:
+def bt_selection(population: typing.List[Chromosome], n: int) -> typing.List[typing.Tuple[Chromosome]]:
     """Selects n individuals from a population using binary tournament selection"""
     if (n % 2):
         n -= 1
@@ -291,7 +327,10 @@ class Assessor:
     f_target: float
     l_penalty_c: float
     f_penalty_c: float
-    max_lat_target = 1/f_target
+
+    def __post_init__(self):
+        self.max_lat_target = 1/self.f_target
+        self.s1, self.s2, self.s3 = build_perf_predictors()
 
     def penalty_l(self, latency):
         return max(0, self.l_penalty_c * (latency - self.l_target))
@@ -305,26 +344,27 @@ class Assessor:
 
     def assess(self, chromosome: Chromosome) -> float:
         """Assesses a chromosome."""
-        total_lat, max_lat = predict_performance(chromosome)
-        power = predict_power(chromosome)             ## TODO: MAKE THIS
+        total_lat, max_lat = predict_performance(chromosome, self.s1, self.s2, self.s3)
+        power = predict_power(chromosome)
 
         return -Assessor.objective(total_lat, max_lat, power)
 
 
 def genetic_algorithm(population_size: int, #mutation_rate: int,
         target_latency: int, target_fps: int, time_limit: float,
-        staleness_limit: int, save: bool = True) -> Chromosome:
+        staleness_limit: int, save: bool = True, warm: str =None) -> Chromosome:
     """Runs the genetic algorithm."""
     end_time = time() + time_limit
+
     # initialize assessor
     assessor = Assessor(target_latency, target_fps, LATENCY_PENALTY, FPS_PENALTY)  # function pointer
                                                   # ^ play around with these values!
 
     # initialize population
-    population = initialize_population(population_size, assessor)
+    population = initialize_population(population_size, assessor, warm)
 
     last_update = 0
-    best_fitness = 0
+    best_fitness = -inf
 
     # run until improvement stops or time limit reached.
     while last_update < staleness_limit and time() < end_time:
@@ -356,7 +396,28 @@ def genetic_algorithm(population_size: int, #mutation_rate: int,
 
     # return best chromosome
     population = selection(population, population_size)
-    if save:
-        with open("ga_population.txt") as f:
+    record_fitness = 0
+    if save == "auto":
+        with open("ga_population.txt", "r") as f:
+            record_fitness = float(f.readline().strip())
+    if save == "force" or save == "auto" and best_fitness > record_fitness:
+        with open("ga_population.txt", "w") as f:
+            f.write(f"{best_fitness}\n")
             f.write("\n".join([chro.__str__() for chro in population]))
     return population[0]
+
+
+# dbg
+if __name__ == "__main__":
+    population = initialize_population(20)
+    pstr1 = str(population)
+    with open("ga_population.txt", "w") as f:
+        f.write("nonsense\n")
+        f.write("\n".join([str(chro) for chro in population]))
+
+
+    # print(list(map(predict_performance, population)))
+    population = []
+    population = load_population("ga_population.txt")
+    # population = eval(repr(population))
+    print(pstr1 == str(population))
