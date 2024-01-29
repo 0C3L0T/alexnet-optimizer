@@ -74,7 +74,7 @@ int main(int argc, char *argv[]) {
     int N_Frames = 20;
     // run graph
     char Run_Command[150];
-    sprintf(Run_Command, "./graph_alexnet_pipe_all --threads=4 --threads2=2 --target=NEON --n=%d --partition_point=%d --partition_point2=%d --order=B-G-L > output.txt",
+    sprintf(Run_Command, "./graph_alexnet_all_pipe_sync --threads=4 --threads2=2 --target=NEON --n=%d --partition_point=%d --partition_point2=%d --order=B-G-L > output.txt",
             N_Frames, pp1, pp2);
     system(Run_Command);
 
