@@ -2,26 +2,17 @@
 // Created by ocelot on 1/28/24.
 //
 
+#include <stdio.h>
 #include <stdlib.h>
-#include <time.h>
+#include "GA.h"
 
 int NETWORK_SIZE = 8;
 
-enum component_type {
-    BIG,
-    GPU,
-    LITTLE,
-};
 
 int littleFrequency[] = {500000, 667000, 1000000, 1200000, 1398000, 1512000, 1608000, 1704000, 1800000};
 int bigFrequency[] = {500000, 667000, 1000000, 1200000, 1398000, 1512000, 1608000, 1704000, 1800000, 1908000, 2016000,
                 2100000, 2208000};
 
-typedef struct {
-    component_type type;
-    int layers;
-    int frequency_level;
-} gene;
 
 
 gene* create_gene(component_type type, int layers, int frequency_level) {
@@ -32,17 +23,8 @@ gene* create_gene(component_type type, int layers, int frequency_level) {
     return g;
 }
 
-typedef struct {
-    gene* genes[3];
-    float fitness;
-} chromosome;
 
 typedef chromosome* population;
-
-// TODO: implement fitness function
-float fitness(chromosome* c) {
-    return 0.0;
-}
 
 /***
  * create chromosome struct with random configuration but fixed order
@@ -78,6 +60,33 @@ chromosome create_random_chromosome() {
     c.fitness = 0.0;
 
     return c;
+}
+
+// Function to write the string representation of a chromosome to a buffer
+void chromosomeToString(const chromosome *c, char *buffer, size_t bufferSize) {
+    if (c == NULL || buffer == NULL || bufferSize == 0) {
+        // Handle invalid input
+        return;
+    }
+
+    int offset = 0;
+
+    // Write chromosome information to the buffer
+    offset += snprintf(buffer + offset, bufferSize - offset, "Chromosome:\n");
+
+    for (int i = 0; i < 3; ++i) {
+        gene *g = c->genes[i];
+        if (g != NULL) {
+            offset += snprintf(buffer + offset, bufferSize - offset,
+                               "Type: %d, Layers: %d, Frequency Level: %d\n",
+                               g->type, g->layers, g->frequency_level);
+        }
+    }
+
+    offset += snprintf(buffer + offset, bufferSize - offset, "Fitness: %f\n", c->fitness);
+
+    // Ensure null-termination of the buffer
+    buffer[bufferSize - 1] = '\0';
 }
 
 void free_chromosome_genes(chromosome c) {
@@ -301,13 +310,13 @@ chromosome genetic_algorithm(int population_size, // HAS TO BE EVEN
                             int target_latency,
                             int target_fps,
                             int staleness_limit,
-                            float (*fitness)(chromosome*)
+                            float (*fitness_function) (chromosome*)
                             ) {
     chromosome* population = (chromosome*) malloc(sizeof(chromosome) * population_size);
     chromosome* parents = (chromosome*) malloc(sizeof(chromosome) * population_size/2);
 
     initialize_population(population, population_size);
-    asses_population(population, population_size, fitness);
+    asses_population(population, population_size, fitness_function);
 
     int last_update = 0;
     float best_fitness = 0.0;
@@ -317,7 +326,7 @@ chromosome genetic_algorithm(int population_size, // HAS TO BE EVEN
         bt_selection(population, parents, population_size);
 
         // sort population
-        asses_population(population, population_size, fitness);
+        asses_population(population, population_size, fitness_function);
         quick_sort(population, 0, population_size - 1);
 
         // parents in-place crossover to children
@@ -346,10 +355,4 @@ chromosome genetic_algorithm(int population_size, // HAS TO BE EVEN
     free_population(parents, population_size/2);
 
     return population[0];
-}
-
-int main() {
-    int population_size = 10;
-
-    chromosome c = genetic_algorithm(population_size, 100, 5, 10, fitness);
 }
