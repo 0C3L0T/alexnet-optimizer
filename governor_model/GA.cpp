@@ -34,15 +34,21 @@ gene* create_gene(component_type type, int layers, int frequency_level) {
 
 typedef struct {
     gene* genes[3];
-    float fitness = 0.0;
+    float fitness;
 } chromosome;
+
+typedef chromosome* population;
 
 // TODO: implement fitness function
 float fitness(chromosome* c) {
     return 0.0;
 }
 
-chromosome* create_random_chromosome() {
+/***
+ * create chromosome struct with random configuration but fixed order
+ * @return
+ */
+chromosome create_random_chromosome() {
     // random partition points
     int ran1 = (rand() % NETWORK_SIZE - 1) + 1;
     int ran2 = (rand() % NETWORK_SIZE - 1) + 1;
@@ -63,42 +69,46 @@ chromosome* create_random_chromosome() {
     gene* gpu_gene = create_gene(GPU, pp2 - pp1, bigFrequencyLevel);
     gene* little_gene = create_gene(LITTLE, NETWORK_SIZE - pp2, littleFrequencyLevel);
 
+    chromosome c;
+
     // create chromosome
-    chromosome* c = (chromosome*) malloc(sizeof(chromosome));
-    c->genes[0] = big_gene;
-    c->genes[1] = gpu_gene;
-    c->genes[2] = little_gene;
+    c.genes[0] = big_gene;
+    c.genes[1] = gpu_gene;
+    c.genes[2] = little_gene;
+    c.fitness = 0.0;
 
     return c;
 }
 
-void free_chromosome(chromosome* c) {
+void free_chromosome_genes(chromosome c) {
     for (int i = 0; i < 3; i++) {
-        free(c->genes[i]);
+        free(c.genes[i]);
     }
-
-    free(c);
 }
 
-// pointer to chromosome array
-chromosome** initialize_population (int size) {
-    chromosome** chromosomes = (chromosome**) malloc(sizeof(chromosome*) * size);
-
+/***
+ * fill pre-allocated chromosome array of size with random chromosomes
+ * @param population
+ * @param size
+ */
+void initialize_population (population population, int size) {
     for (int i = 0; i < size; i++) {
-        chromosomes[i] = create_random_chromosome();
+        population[i] = create_random_chromosome();
     }
-
-    return chromosomes;
 }
 
-void free_population(chromosome** population, int size) {
+void free_population(population population, int size) {
     for (int i = 0; i < size; i++) {
-        free_chromosome(population[i]);
+        free_chromosome_genes(population[i]);
     }
 
     free(population);
 }
 
+/***
+ * @param c chromosome pointer
+ * @return the amount of layers above network size in chromosome
+ */
 int layer_err(chromosome* c) {
     return c->genes[0]->layers + c->genes[1]->layers + c->genes[2]->layers - NETWORK_SIZE;
 }
@@ -114,7 +124,11 @@ void cure_child_cancer(chromosome* c) {
     }
 }
 
-// in-place crossover
+/***
+ * in-place chromosome crossover
+ * @param c1 chromosome pointer
+ * @param c2 chromosome pointer
+ */
 void crossover(chromosome* c1, chromosome* c2) {
     int cut_point = rand() % 2 + 1;
 
@@ -186,39 +200,58 @@ void mutate_frequency(chromosome* c) {
     g->frequency_level += change;
 }
 
+// pointer to chromosome
 void mutate(chromosome* c) {
     mutate_layer_size(c);
     mutate_frequency(c);
 }
 
-void asses_population(chromosome** population, int size, float (*fitness)(chromosome*)) {
+/***
+ * Apply fitness function to every individual of population of size
+ * @param population chromosome array
+ * @param size int
+ * @param fitness function pointer that takes chromosome pointer and outputs float
+ */
+void asses_population(population population, int size, float (*fitness)(chromosome*)) {
     for (int i = 0; i < size; i++) {
-        population[i]->fitness = fitness(population[i]);
+        population[i].fitness = fitness(&population[i]);
     }
 }
 
-// sort in descending order
-int partition(chromosome** population, int low, int high) {
-    float pivot = population[high]->fitness;
+/***
+ * pivot for quick sort, sort on fitness in descending order
+ * @param population chromosome array
+ * @param low
+ * @param high
+ * @return new pivot
+ */
+int partition(population population, int low, int high) {
+    float pivot = population[high].fitness;
     int i = (low - 1);
 
     for (int j = low; j <= high - 1; j++) {
-        if (population[j]->fitness >= pivot) {
+        if (population[j].fitness >= pivot) {
             i++;
-            chromosome* temp = population[i];
+            chromosome temp = population[i];
             population[i] = population[j];
             population[j] = temp;
         }
     }
 
-    chromosome* temp = population[i + 1];
+    chromosome temp = population[i + 1];
     population[i + 1] = population[high];
     population[high] = temp;
 
     return (i + 1);
 }
 
-void quick_sort(chromosome** population, int low, int high) {
+/***
+ * quick sort chromosome array based on fitness
+ * @param population
+ * @param low
+ * @param high
+ */
+void quick_sort(population population, int low, int high) {
     if (low < high) {
         int pi = partition(population, low, high);
 
@@ -227,51 +260,41 @@ void quick_sort(chromosome** population, int low, int high) {
     }
 }
 
-// fisher-yates shuffle
-void shuffle(chromosome** population, int size) {
+/***
+ * fisher-yates shuffle
+ * @param population chromosome array
+ * @param size
+ */
+void shuffle(population population, int size) {
     for (int i = size - 1; i > 0; i--) {
         int j = rand() % (i + 1);
-        chromosome* temp = population[i];
+        chromosome temp = population[i];
         population[i] = population[j];
         population[j] = temp;
     }
 }
 
-
-// return pointers to first n chromosomes from population
-chromosome** selection(chromosome** population, int n) {
-    chromosome** selected = (chromosome**) malloc(sizeof(chromosome*) * n);
-
-    for (int i = 0; i < n; i++) {
-        selected[i] = population[i];
-    }
-
-    return selected;
-}
-
-
-// return pointer to size/2 winners
-chromosome** bt_selection(chromosome** population, int size) {
-    // array of winners
-    chromosome** winners = (chromosome**) malloc(sizeof(chromosome*) * (size/2));
-
+/***
+ * select half of the population of size trough binary tournament and copy into parents array
+ * @param population chromosome array
+ * @param parents chromosome array
+ * @param size
+ */
+void bt_selection(population population, chromosome* parents, int size) {
     for (int i = 0; i < size/2; i++) {
         shuffle(population, size);
-        chromosome* c1 = population[0];
-        chromosome* c2 = population[1];
-        chromosome* c3 = population[2];
-        chromosome* c4 = population[3];
+        chromosome c1 = population[0];
+        chromosome c2 = population[1];
+        chromosome c3 = population[2];
+        chromosome c4 = population[3];
 
-        chromosome* p1 = (c1->fitness > c2->fitness) ? c1 : c2;
-        chromosome* p2 = (c3->fitness > c4->fitness) ? c3 : c4;
+        chromosome p1 = (c1.fitness > c2.fitness) ? c1 : c2;
+        chromosome p2 = (c3.fitness > c4.fitness) ? c3 : c4;
 
-        // copy winners into array
-        winners[i * 2] = p1;
-        winners[i * 2 + 1] = p2;
+        // copy values
+        parents[i * 2] = p1;
+        parents[i * 2 + 1] = p2;
     }
-
-
-    return winners;
 }
 
 chromosome genetic_algorithm(int population_size, // HAS TO BE EVEN
@@ -280,44 +303,49 @@ chromosome genetic_algorithm(int population_size, // HAS TO BE EVEN
                             int staleness_limit,
                             float (*fitness)(chromosome*)
                             ) {
-    chromosome** population = initialize_population(population_size);
+    chromosome* population = (chromosome*) malloc(sizeof(chromosome) * population_size);
+    chromosome* parents = (chromosome*) malloc(sizeof(chromosome) * population_size/2);
+
+    initialize_population(population, population_size);
     asses_population(population, population_size, fitness);
-    quick_sort(population, 0, population_size - 1);
 
     int last_update = 0;
     float best_fitness = 0.0;
 
     while (last_update < staleness_limit) {
-        chromosome** best_half = selection(population, population_size/2); // array of size/2 best chromosomes pointers
-        chromosome** parents = bt_selection(population, population_size); // array of size/2 winners pointers
- 
-        // override original population with new population
-        for (int i = 0; i < population_size/2; i++) {
-            *population[i] = *parents[i];
-            *population[population_size - 1 - i] = *best_half[i];
-        }
+        // selected individuals are copied to parents array
+        bt_selection(population, parents, population_size);
 
-        // mutate winners of tournament
-        for (int i = 0; i < population_size/2; i+2) {
-            crossover(population[i], population[i + 1]);
-            mutate(population[i]);
-            mutate(population[i + 1]);
-        }
-
+        // sort population
         asses_population(population, population_size, fitness);
         quick_sort(population, 0, population_size - 1);
 
-        chromosome* best = population[0];
+        // parents in-place crossover to children
+        for (int i = 0; i < population_size/2; i += 2) {
+            crossover(&parents[i], &parents[i+1]);
+        }
 
-        if (best->fitness > best_fitness) {
-            best_fitness = best->fitness;
+        // free bottom half and override with children
+        for (int i = 0; i < population_size/2; i++) {
+            free_chromosome_genes(population[population_size - i]);
+            population[population_size - 1] = parents[i];
+        }
+
+        // check staleness
+        chromosome best = population[0];
+        if (best.fitness > best_fitness) {
+            best_fitness = best.fitness;
             last_update = 0;
         } else {
             last_update++;
         }
     }
 
-    return *population[0];
+    // free memory
+    free_population(population, population_size);
+    free_population(parents, population_size/2);
+
+    return population[0];
 }
 
 int main() {
