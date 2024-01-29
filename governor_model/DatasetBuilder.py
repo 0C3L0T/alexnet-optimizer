@@ -47,7 +47,7 @@ def exportPerformance():
 
 def exportPower():
     a = Aggregator()
-    a.aggregate("training_data/pwr_data_raw.txt", None)
+    a.aggregate("training_data/pwr_inputdata_raw.txt", "training_data/power_output.txt")
     # a.aggregate("../data_collection/test_results/single_components/together/1/adb_output.txt", None)
     # print(a.split[0])
 
@@ -62,7 +62,10 @@ def exportPower():
         except KeyError:
             print("This measurement set is missing power data, can't build")
             return
-        data.append([pp1,pp2,bfreq,lfreq,power])
+        l1 = pp1
+        l2 = (pp2-pp1)
+        l3 = (LAYERS-pp2)
+        data.append([l1,l2,l3,bfreq,bfreq**2,lfreq,lfreq**2,power])
 
     with open("training_data/power_data.txt", "w") as f:
         f.write("\n".join([" ".join(map(str, sample)) for sample in data]))
@@ -77,7 +80,7 @@ def importDataset(train_size=0.7, stage: int = None):
     if stage:
         file = f"s{stage}_perf_data.txt"
     else:
-        file = f"power.txt"
+        file = f"power_data.txt"
 
     *X, y = np.loadtxt(f"training_data/{file}", unpack=True)
     X = np.array(X).T
@@ -100,5 +103,5 @@ def importDataset(train_size=0.7, stage: int = None):
     return X_train, y_train, X_test, y_test
 
 if __name__ == "__main__":
-    exportPerformance()
-    # exportPower()
+    # exportPerformance()
+    exportPower()
