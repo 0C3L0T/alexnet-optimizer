@@ -1,3 +1,7 @@
+"""
+This is a tester to help us find a way to calculate total latency from
+inference. It's just a messy script, so don't take the code quality seriously.
+"""
 from itertools import accumulate
 from measurementAggregator import Aggregator
 import numpy as np

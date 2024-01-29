@@ -352,7 +352,7 @@ class Assessor:
 
 def genetic_algorithm(population_size: int, #mutation_rate: int,
         target_latency: int, target_fps: int, time_limit: float,
-        staleness_limit: int, save: bool = True, warm: str =None) -> Chromosome:
+        staleness_limit: int, save: bool = True, warm: str = None) -> Chromosome:
     """Runs the genetic algorithm."""
     end_time = time() + time_limit
 
@@ -418,15 +418,4 @@ def chromosome_to_config(chromosome: Chromosome):
 
 # dbg
 if __name__ == "__main__":
-    population = initialize_population(20)
-    pstr1 = str(population)
-    with open("ga_population.txt", "w") as f:
-        f.write("nonsense\n")
-        f.write("\n".join([str(chro) for chro in population]))
-
-
-    # print(list(map(predict_performance, population)))
-    population = []
-    population = load_population("ga_population.txt")
-    # population = eval(repr(population))
-    print(pstr1 == str(population))
+    pass

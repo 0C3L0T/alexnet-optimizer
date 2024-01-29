@@ -65,7 +65,7 @@ def exportPower():
         l1 = pp1
         l2 = (pp2-pp1)
         l3 = (LAYERS-pp2)
-        data.append([l1,l2,l3,bfreq,bfreq**2,lfreq,lfreq**2,power])
+        data.append([l1,l2,l3,bfreq,lfreq,power])
 
     with open("training_data/power_data.txt", "w") as f:
         f.write("\n".join([" ".join(map(str, sample)) for sample in data]))

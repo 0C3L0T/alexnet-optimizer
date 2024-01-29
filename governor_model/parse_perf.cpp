@@ -14,7 +14,7 @@ On the Board:
 #include <sstream>
 #include <string>
 #include <array>
-#include "parse_results.h"
+// #include "parse_perf.h"
 using namespace std;
 
 #define PARSEAMOUNT 2
@@ -42,7 +42,7 @@ string getOutput(int index, string text)
 }
 
 /* Get feedback by parsing the results */
-void ParseResults()
+int main()
 {
     ifstream myfile("/data/local/Working_dir/output.txt");
 
@@ -71,4 +71,5 @@ void ParseResults()
         }
     }
     cout << endl;
+    return 0;
 }
