@@ -224,7 +224,7 @@ def mutate_frequency(individual: Chromosome) -> Chromosome:
     change = randint(-1, 1)
 
     # limit is the length of the frequency list
-    limit = gene.componentType == ComponentType.IBG and len(BigFrequency) or len(LittleFrequency)
+    limit = gene.componentType == ComponentType.BIG and len(BigFrequency) or len(LittleFrequency)
 
     # beware of boundaries
     if gene.frequency_level + change > limit or gene.frequency_level + change < 0:

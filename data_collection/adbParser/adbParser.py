@@ -15,6 +15,7 @@ def adb_shell_listener():
     process.stdin.write("./governor\n")
     process.stdin.flush()
     try:
+        idx = 0
         while True:
             # Read the output from the ADB shell
             output = process.stdout.readline().strip()
@@ -29,9 +30,13 @@ def adb_shell_listener():
                 # Print the timestamp and the ADB shell output
                 print(result)
 
+                if not idx % 10:
+                    print(idx)
+
                 # write the output and timestamp to a file
                 with open("adb_output.txt", "a") as f:
                     f.write(result)
+            idx += 1
 
     except KeyboardInterrupt:
         # Handle keyboard interrupt (Ctrl+C) to stop the script

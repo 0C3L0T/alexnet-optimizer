@@ -44,7 +44,7 @@ void initBigWithFreq(int freqTableIdx) {
 
 void runCNN(int partition_point, int partition_point2, const std::string& order) {
     char Run_Command[256];
-    sprintf(Run_Command, "./graph_alexnet_all_pipe_sync --threads=4  --threads2=2 --n=60 --total_cores=6 --partition_point=%d --partition_point2=%d --order=%s > output.txt", partition_point, partition_point2, order.c_str());
+    sprintf(Run_Command, "./graph_alexnet_all_pipe_sync --threads=4  --threads2=2 --n=60 --total_cores=6 --partition_point=%d --partition_point2=%d --order=%s &> output.txt", partition_point, partition_point2, order.c_str());
     system(Run_Command);
 }
 
@@ -86,7 +86,7 @@ int main(int argc, char *argv[])
         int pp1 = rans[lowest];
         int pp2 = rans[!lowest];
         int lfreqlvl = rand() % 9;
-        int bfreqlvl = rand() % 13;
+        int bfreqlvl = rand() % 10;
 
         initLittleWithFreq(lfreqlvl);
         initBigWithFreq(bfreqlvl);
