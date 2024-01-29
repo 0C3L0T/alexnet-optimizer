@@ -53,12 +53,16 @@ LEARNING_RATE = 2e-4
 #
 
 
+def make_model():
+    return nn.Sequential(
+        nn.Linear(8, 8),
+        nn.Sigmoid(),
+        nn.Linear(8, 1)
+    )
+
+
 # should port
-model = nn.Sequential(
-    nn.Linear(8,8),
-    nn.Sigmoid(),
-    nn.Linear(8, 1)
-)
+model = make_model()
 
 
 # should not port
@@ -121,7 +125,7 @@ def train(stage, n_epochs=50, batch_size=20, lr=0.0001, verbose=False, graph=Fal
 
     # load model with best accuracy
     model.load_state_dict(best_weights)
-    with open("weights/best_score.txt", "r+") as f:
+    with open("weights/best_score_perf.txt", "r+") as f:
         raw_record = f.readline().strip().split(' ')
         if raw_record == ['']:
             raw_record = ['800000', '800000', '800000']
@@ -160,14 +164,7 @@ def eval_models():
         print(f"s{i} MSE: {mse:.2f}\tRMSE: {np.sqrt(mse):.2f}")
 
 
-def make_model():
-    return nn.Sequential(
-        nn.Linear(8,8),
-        nn.Sigmoid(),
-        nn.Linear(8, 1)
-    )
-
-
+# should port
 def build_perf_predictors():
     models = [make_model() for _ in range(3)]
     for i, m in enumerate(models):
@@ -176,11 +173,11 @@ def build_perf_predictors():
     return models
 
 
-# should port
-def predict_stage(stage, X):
-    model.load_state_dict(torch.load(f"weights/s{stage}_weights.weights"))
-    model.eval()
-    return float(model(X))
+# # should port
+# def predict_stage(stage, X):
+#     model.load_state_dict(torch.load(f"weights/s{stage}_weights.weights"))
+#     model.eval()
+#     return float(model(X))
 
 
 # should port
