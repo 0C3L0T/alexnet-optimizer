@@ -24,8 +24,8 @@ process.stdin.flush()
 
 
 # for latency in range(200, 600, 200):
-latency = 200
-fps = 18
+latency = 600
+fps = 5
 
 start_time = time()
 command = f"./Governor {graph} {parts} {fps} {latency}\n"
@@ -42,19 +42,19 @@ while True:
     if output == "Solution Was Found.":
         result = process.stdout.readline().strip()
 
-        time = time() - start_time
-        
+        duration = time() - start_time
+
         with open("example_governer_measurements.txt", "a") as file:
-             file.write(f"{result}, {time}\n\n")
-             
+             file.write(f"{result}, {duration}\n\n")
+
 
 
         break
 
     elif output == "No Solution Found":
-        time = time() - start_time
+        duration = time() - start_time
 
         with open("example_governer_measurements.txt", "a") as file:
-             file.write(f"no solution, {time}\n\n")
+             file.write(f"no solution, {duration}\n\n")
         break
 

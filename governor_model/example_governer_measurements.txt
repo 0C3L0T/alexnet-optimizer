@@ -13,3 +13,21 @@ TargetBigFrequency:2208000 	 TargetLittleFrequency:1800000 	 PartitionPoint1:1 	
 lat=200, fps=18
 no solution, 329.62408471107483
 
+lat=100, fps=5
+no solution, 336.41668581962585
+
+lat=200, fps=5
+TargetBigFrequency:2208000 	 TargetLittleFrequency:1800000 	 PartitionPoint1:1 	 PartitionPoint2:4 	 Order:L-G-B, 334.89497995376587
+
+lat=300, fps=5
+TargetBigFrequency:1398000 	 TargetLittleFrequency:1800000 	 PartitionPoint1:4 	 PartitionPoint2:4 	 Order:L-G-B, 229.56263089179993
+
+lat=400, fps=5
+TargetBigFrequency:1000000 	 TargetLittleFrequency:1800000 	 PartitionPoint1:4 	 PartitionPoint2:4 	 Order:L-G-B, 206.67773485183716
+
+lat=500, fps=5
+TargetBigFrequency:1000000 	 TargetLittleFrequency:1800000 	 PartitionPoint1:4 	 PartitionPoint2:4 	 Order:L-G-B, 204.33638310432434
+
+lat=600, fps=5
+TargetBigFrequency:1000000 	 TargetLittleFrequency:1800000 	 PartitionPoint1:4 	 PartitionPoint2:4 	 Order:L-G-B, 204.10431814193726
+
