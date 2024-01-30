@@ -45,7 +45,7 @@ string getOutput(int index, string text)
 int main()
 {
     ifstream myfile("/data/local/Working_dir/output.txt");
-
+    cout << "test";
     /* Read Output.txt File and Extract Data */
     for (std::string line; getline(myfile, line);)
     {

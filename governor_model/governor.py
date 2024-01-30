@@ -17,30 +17,36 @@ def govern(target_latency: float, target_fps: float):
 
     # setup
     process.stdin.write("cd /data/local/Working_dir\n")
-    process.stdin.write("export LD_LIBRARY_PATH=/data/local/Working_dir")
-    process.stdin.write("echo performance > /sys/devices/system/cpu/cpufreq/policy0/scaling_governor")
-    process.stdin.write("echo performance > /sys/devices/system/cpu/cpufreq/policy2/scaling_governor")
-    process.stdin.write("echo 1 > /sys/class/fan/enable")
-    process.stdin.write("echo 0 > /sys/class/fan/mode")
-    process.stdin.write("echo 4 > /sys/class/fan/level")
+    process.stdin.write("export LD_LIBRARY_PATH=/data/local/Working_dir\n")
+    process.stdin.write("echo performance > /sys/devices/system/cpu/cpufreq/policy0/scaling_governor\n")
+    process.stdin.write("echo performance > /sys/devices/system/cpu/cpufreq/policy2/scaling_governor\n")
+    process.stdin.write("echo 1 > /sys/class/fan/enable\n")
+    process.stdin.write("echo 0 > /sys/class/fan/mode\n")
+    process.stdin.write("echo 4 > /sys/class/fan/level\n")
     process.stdin.flush()
 
     adjusted_latency = target_latency
     adjusted_fps = target_fps
     win = False
+    # print("hi")
     while not win:
-        pp1, pp2, bfreq, lfreq = chromosome_to_config(genetic_algorithm(10, adjusted_latency, adjusted_fps, 60*2, 50))
-        print(f"Trying configuration:\npp1:{pp1}, pp2{pp2}, Big frequency{bfreq}, Small frequency{lfreq}")
-        process.stdin.write(f"echo {lfreq} > /sys/devices/system/cpu/cpufreq/policy0/scaling_max_freq") # little
-        process.stdin.write(f"echo {bfreq} > /sys/devices/system/cpu/cpufreq/policy2/scaling_max_freq") # big
-        process.stdin.write(f"./graph_alexnet_all_pipe_sync --threads=4  --threads2=2 --n=60 --total_cores=6 --partition_point={pp1} --partition_point2={pp2} --order={ORDER} &> output.txt")
-        process.stdin.write(f"./parse_perf")
+        pp1, pp2, bfreq, lfreq = chromosome_to_config(genetic_algorithm(100, adjusted_latency, adjusted_fps, 60, 50))
+        print(f"Trying configuration:\npp1:{pp1}, pp2:{pp2}, Big frequency:{bfreq}, Small frequency:{lfreq}\n")
+        process.stdin.write(f"echo {lfreq} > /sys/devices/system/cpu/cpufreq/policy0/scaling_max_freq\n") # little
+        process.stdin.write(f"echo {bfreq} > /sys/devices/system/cpu/cpufreq/policy2/scaling_max_freq\n") # big
+        # process.stdin.write("echo hi\n")
+        # process.stdin.flush()
+        # print(process.stdout.readline().strip())
+        process.stdin.write(f"./graph_alexnet_all_pipe_sync --threads=4  --threads2=2 --n=60 --total_cores=6 --partition_point={pp1} --partition_point2={pp2} --order={ORDER} &> output.txt\n")
+        process.stdin.write(f"./parse_perf\n")
         process.stdin.flush()
 
         try:
             while True:
                 # Read the output from the ADB shell
+                print("hrrr")
                 output = process.stdout.readline().strip()
+                print("output is:", output)
 
                 # Check if the output is not empty
                 if output:
@@ -64,12 +70,16 @@ def govern(target_latency: float, target_fps: float):
                         adjusted_latency -= current_fps - target_fps
                     print("Configuration failed to reach performance target.")
                     break
+                print("ouch")
 
         except KeyboardInterrupt:
             # Handle keyboard interrupt (Ctrl+C) to stop the script
             print("Script terminated by user.")
-
-        finally:
-            # Close the subprocess
             process.terminate()
             break
+
+    print("bye!")
+
+
+if __name__ == "__main__":
+    govern(120, 10)

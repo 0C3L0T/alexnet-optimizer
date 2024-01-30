@@ -19,6 +19,8 @@ N_EPOCHS = 20000
 BATCH_SIZE = 20
 LEARNING_RATE = 2e-4
 
+GHZ = 1000000
+
 # INPUT FEATURES:
 #
 #   S1:
@@ -158,6 +160,11 @@ def eval_models():
         y = torch.tensor(y, dtype=torch.float32).reshape(-1, 1)
         model.load_state_dict(torch.load(f"weights/s{i}_weights.weights"))
         model.eval()
+        # if i == 1:
+        #     tst = torch.tensor([0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0, GHZ/1398000])
+        #     print(tst)
+        #     print(X[2100])
+        #     print(float(model(tst)))
         y_pred = model(X)
         loss_fn = nn.MSELoss()
         mse = float(loss_fn(y_pred, y))
@@ -186,14 +193,15 @@ def predict_performance(chromosome, s1, s2, s3) -> tuple[float]:
     pp2 = pp1 + chromosome[1].layers
     bfreq = freqLevels[chromosome[0].frequency_level]
     lfreq = freqLevels[chromosome[2].frequency_level]
-    X1 = torch.tensor(pp2B(pp1, pp2, 1) + [bfreq], dtype=torch.float32)
-    X2 = torch.tensor(pp2B(pp1, pp2, 2) + [bfreq], dtype=torch.float32)
-    X3 = torch.tensor(pp2B(pp1, pp2, 3) + [lfreq], dtype=torch.float32)
-    print("in:", X1, X2, X3)
-    inf_lat1 = s1(X1)
-    inf_lat2 = s2(X2)
-    inf_lat3 = s3(X3)
-    print("out:", inf_lat1, inf_lat2, inf_lat3)
+    # print("frequencies:", bfreq, lfreq)
+    X1 = torch.tensor(pp2B(pp1, pp2, 1) + [GHZ/bfreq], dtype=torch.float32)
+    X2 = torch.tensor(pp2B(pp1, pp2, 2) + [GHZ/bfreq], dtype=torch.float32)
+    X3 = torch.tensor(pp2B(pp1, pp2, 3) + [GHZ/lfreq], dtype=torch.float32)
+    # print("in:", X1, X2, X3)
+    inf_lat1 = float(s1(X1))
+    inf_lat2 = float(s2(X2))
+    inf_lat3 = float(s3(X3))
+    # print("out:", float(inf_lat1), float(inf_lat2), float(inf_lat3))
     active_lat = [inf_lat1]
     if pp2-pp1 > 0:
         active_lat.append(inf_lat2)
@@ -206,6 +214,7 @@ def predict_performance(chromosome, s1, s2, s3) -> tuple[float]:
     if pp2 < 8 and pp2-pp1 == 0:
         total_lat -= max(0, inf_lat1-inf_lat3)
 
+    # print(total_lat, max_lat)
     return total_lat, max_lat
 
 
