@@ -14,6 +14,7 @@ from math import ceil
 LATENCY_PENALTY = 5000000
 FPS_PENALTY = 5000
 POPULATION_SIZE = 100
+SELECTION_PRESSURE = -1.0
 LAYER_MUTATE_CHANCE = 70
 
 
@@ -67,6 +68,16 @@ class Chromosome:
         return f"L1:{l1}, L2:{l2}, L3:{l3}, bigFreqLv:{bigFreqlv}, littleFreqLv:{littleFreqLv}"
 
 
+def make_chromosome(pp1, pp2, bfreq, lfreq) -> Chromosome:
+    big_gene = Gene(ComponentType.BIG, pp1, bfreq)
+    gpu_gene = Gene(ComponentType.GPU, pp2 - pp1, None)
+    little_gene = Gene(ComponentType.LITTLE, NETWORK_SIZE - pp2, lfreq)
+
+    return Chromosome(
+        [big_gene, gpu_gene, little_gene]
+    )
+
+
 def create_random_chromosome() -> Chromosome:
     """Create a random chromosome, make sure that the order of the components is consistent"""
 
@@ -82,13 +93,8 @@ def create_random_chromosome() -> Chromosome:
     little_frequency = randint(0, len(LittleFrequency) - 1)
     big_frequency = randint(0, len(BigFrequency) - 1)
 
-    big_gene = Gene(ComponentType.BIG, pp1, big_frequency)
-    gpu_gene = Gene(ComponentType.GPU, pp2 - pp1, None)
-    little_gene = Gene(ComponentType.LITTLE, NETWORK_SIZE - pp2, little_frequency)
+    return make_chromosome(pp1, pp2, big_frequency, little_frequency)
 
-    return Chromosome(
-        [big_gene, gpu_gene, little_gene]
-    )
 
 def parse_chromosome(string_rep: str):
     dict_ = dict([tuple(gene.split(":")) for gene in string_rep.split(", ")])
@@ -357,7 +363,8 @@ def selection(population: typing.List[Chromosome], n: int) -> typing.List[Chromo
     # return the best half
     return sorted_population[:n]
 
-def mixed_selection(population: typing.List[Chromosome], n: int, p: float = -3.0, guarantee=3)  -> typing.List[Chromosome]:
+def mixed_selection(population: typing.List[Chromosome], n: int,
+                    p: float = SELECTION_PRESSURE, guarantee=3)  -> typing.List[Chromosome]:
     assert not dup_check(population)
     sorted_population = selection(population, len(population))
     elite = sorted_population[:guarantee]
@@ -366,28 +373,14 @@ def mixed_selection(population: typing.List[Chromosome], n: int, p: float = -3.0
     lowest = active_participants[-1].fitness
     diff = highest-(lowest*p)
     fitnesses = [(c.fitness-(lowest*p))/diff for c in active_participants]
-    # print(fitnesses)
-    # exit()
     wheel = []
     for i, f in enumerate(fitnesses):
         wheel += [i] * ceil(f * 50)
     selected = []
-    # passed = []
-    # passedint = []
     for i in range(n-guarantee):
         s = choice(wheel)
-        # try:
-        #     assert str(sorted_population[s]) not in passed
-        #     assert str(s) not in passedint
-        # except AssertionError:
-        #     print(f"index: {i}, s = {s},\npassed:{passed},\npassedint{passedint},\nwheel:{wheel}")
-        #     raise AssertionError
         selected.append(active_participants[s])
-        # passed.append(str(sorted_population[s]))
-        # passedint.append(s)
-        # assert not dup_check(selected)
         wheel = [c for c in wheel if c != s]
-        # assert s not in wheel
 
     return elite + selected
 
@@ -556,7 +549,7 @@ def genetic_algorithm(population_size: int, #mutation_rate: int,
             best_fitness = best.fitness
             # for c in population:
             #     print(str(c))
-            print("new most fit individual:", str(best), f"fitness={best.fitness}, est_lat={best.est_lat}, est_fps={best.est_fps}")
+            print("new most fit individual:", str(best), f"fitness={best.fitness:.2f}, est_lat={best.est_lat:.2f}, est_fps={best.est_fps:.2f}")
         if best.fitness < best_fitness:
             print("best fitness lowered")
     if last_update >= staleness_limit:
