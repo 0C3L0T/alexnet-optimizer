@@ -82,4 +82,4 @@ def govern(target_latency: float, target_fps: float):
 
 
 if __name__ == "__main__":
-    govern(120, 10)
+    govern(500, 19)
