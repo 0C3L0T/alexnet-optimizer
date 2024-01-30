@@ -28,9 +28,10 @@ def govern(target_latency: float, target_fps: float):
     adjusted_latency = target_latency
     adjusted_fps = target_fps
     win = False
+    warm=None
     # print("hi")
     while not win:
-        pp1, pp2, bfreq, lfreq = chromosome_to_config(genetic_algorithm(100, adjusted_latency, adjusted_fps, 60, 50))
+        pp1, pp2, bfreq, lfreq = chromosome_to_config(genetic_algorithm(100, adjusted_latency, adjusted_fps, 60, 50, save="force", warm=warm, save_location="warmstart.txt"))
         print(f"Trying configuration:\npp1:{pp1}, pp2:{pp2}, Big frequency:{bfreq}, Small frequency:{lfreq}\n")
         process.stdin.write(f"echo {lfreq} > /sys/devices/system/cpu/cpufreq/policy0/scaling_max_freq\n") # little
         process.stdin.write(f"echo {bfreq} > /sys/devices/system/cpu/cpufreq/policy2/scaling_max_freq\n") # big
@@ -68,6 +69,7 @@ def govern(target_latency: float, target_fps: float):
                         adjusted_fps += target_fps - current_fps
                     if current_latency > target_latency:
                         adjusted_latency -= current_fps - target_fps
+                    warm = "warmstart.txt"
                     print("Configuration failed to reach performance target.")
                     break
                 print("ouch")

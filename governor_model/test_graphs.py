@@ -6,7 +6,8 @@ LF_RANGE = 1800-500
 bf1 = np.array([500, 1398, 2208])*1000
 lf = np.array([500,1800])*1000
 bf2 = np.array([500, 667, 1000, 1398, 1608, 1704, 1908, 2100, 2208], dtype=np.float64)*1000
-y3 = np.array()
+lf2 = np.array([500, 1000, 1398, 1608, 1800])*1000
+# y3 = np.array()
 
 def scalebf(bf):
     return (bf-500) / BF_RANGE
@@ -21,6 +22,8 @@ y2 = np.array([0.56,0.59,0.64,0.73,0.78,0.81,0.91,1.09,1.24])
 # 0.05 +
 
 # print(np.vstack((bf2,y1)).T)
+
+BASELINE_AMPS = 0.4
 
 SML_IDLE_DIFF = 0.01
 BIG_IDLE_DIFF = 0.04
@@ -51,7 +54,17 @@ def bigamp(bf):
     return ans
 
 def smlamp(lf):
-    0.0000616413 * lf + 0.418258
+    lf = lf*1e-3
+    return 6.16413e-5 * lf + 0.418258
+
+def gpuamp(bf, util):
+    pass
+
+def totalamps(lf,bf,butil,gutil,lutil):
+    return BASELINE_AMPS + smlamp(lf)*lutil + bigamp(bf)*butil + gpuamp(bf,gutil)
+
+def totalwatts(amps):
+    return amps * 5.0
 
 # x = b2
 # print(bf2[-1])
@@ -77,7 +90,8 @@ def smlamp(lf):
 
 plt.plot(bf2, y2, label="small low")
 plt.plot(bf1, y1, label="small high")
-plt.plot(bf2, bigamp(bf2), label="lsq small low")
+plt.plot(bf2, bigamp(bf2), label="big lsq small=low")
+plt.plot(lf2, smlamp(lf2), label="small lsq big=low")
 # plt.plot(bf2, amp(bf2, lf[0]), label="estim1")
 # plt.plot(bf1, amp(bf1, lf[1]), label="estim2")
 plt.legend()

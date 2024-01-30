@@ -1,17 +1,21 @@
+from itertools import accumulate
 import typing
 from PerformancePredictor import predict_performance, build_perf_predictors
 from PowerPredictor import predict_power
 from time import time
 from dataclasses import dataclass
 from enum import Enum
-from random import randint
+from random import randint, choice
 from numpy import inf
 from copy import deepcopy
+from math import ceil
 
 # HYPERPARAMETERS WE SHOULD TEST
-LATENCY_PENALTY = 2000
-FPS_PENALTY = 50000
+LATENCY_PENALTY = 5000000
+FPS_PENALTY = 5000
 POPULATION_SIZE = 100
+SELECTION_PRESSURE = -1.0
+LAYER_MUTATE_CHANCE = 70
 
 
 NETWORK_SIZE = 8
@@ -44,6 +48,8 @@ class Chromosome:
     """A chromosome is a list of 11 genes."""
     genes: typing.List[Gene]
     fitness: float = 0.0
+    est_lat: float = 0.0
+    est_fps: float = 0.0
 
     def __getitem__(self, item):
         return self.genes[item]
@@ -62,6 +68,16 @@ class Chromosome:
         return f"L1:{l1}, L2:{l2}, L3:{l3}, bigFreqLv:{bigFreqlv}, littleFreqLv:{littleFreqLv}"
 
 
+def make_chromosome(pp1, pp2, bfreq, lfreq) -> Chromosome:
+    big_gene = Gene(ComponentType.BIG, pp1, bfreq)
+    gpu_gene = Gene(ComponentType.GPU, pp2 - pp1, None)
+    little_gene = Gene(ComponentType.LITTLE, NETWORK_SIZE - pp2, lfreq)
+
+    return Chromosome(
+        [big_gene, gpu_gene, little_gene]
+    )
+
+
 def create_random_chromosome() -> Chromosome:
     """Create a random chromosome, make sure that the order of the components is consistent"""
 
@@ -77,13 +93,8 @@ def create_random_chromosome() -> Chromosome:
     little_frequency = randint(0, len(LittleFrequency) - 1)
     big_frequency = randint(0, len(BigFrequency) - 1)
 
-    big_gene = Gene(ComponentType.BIG, pp1, big_frequency)
-    gpu_gene = Gene(ComponentType.GPU, pp2 - pp1, None)
-    little_gene = Gene(ComponentType.LITTLE, NETWORK_SIZE - pp2, little_frequency)
+    return make_chromosome(pp1, pp2, big_frequency, little_frequency)
 
-    return Chromosome(
-        [big_gene, gpu_gene, little_gene]
-    )
 
 def parse_chromosome(string_rep: str):
     dict_ = dict([tuple(gene.split(":")) for gene in string_rep.split(", ")])
@@ -122,13 +133,19 @@ def initialize_population(population_size: int, assessor = None, import_path: st
         return load_population(import_path)
 
     population = []
+    popul_str = []
 
     for _ in range(population_size):
-        individual = create_random_chromosome()
+        while True:
+            individual = create_random_chromosome()
+            if str(individual) not in popul_str:
+                break
         if assessor:
             individual.fitness = fitness(assessor, individual)
         population.append(individual)
-
+        popul_str.append(str(individual))
+    print("in initialize dup check")
+    dup_check(population)
     return population
 
 
@@ -147,20 +164,19 @@ def cure_child_cancer(child: Chromosome, dbgchild=None):
             continue
         if err > 0 and (correction_layer == 0 and layers <= 1 or layers <= 0):
             continue
-        # if dbgchild:
-        #     print("child 1 before child 2 op:", dbgchild)
         child.genes[correction_layer].layers -= err
-        # if dbgchild:
-    #         print("child 1  after child 2 op:", dbgchild)
-    # print("child  inside hospital:", child)
 
-        # if child.genes[correction_layer].frequency_level != None:
-        #     child.genes[correction_layer].frequency_level -= err
-        # else: # this freq level code is not ready yet btw, it's not clamped
-        #     child.genes[0].frequency_level -= err
+        if correction_layer == 1:
+            continue
+        freqlvl = child.genes[correction_layer].frequency_level
+        if err < 0 and (correction_layer == 2 and freqlvl >= 8 or freqlvl >= 12):
+            continue
+        if err > 0 and (freqlvl <= 0):
+            continue
+        child.genes[correction_layer].frequency_level -= err
 
 
-def crossover(a: Chromosome, b: Chromosome, random_individual) -> Chromosome:
+def crossover(a: Chromosome, b: Chromosome) -> Chromosome:
     """Performs one-point crossover between two chromosomes."""
 
 
@@ -233,7 +249,7 @@ def mutate_layer_size(individual: Chromosome) -> Chromosome:
 
     # amount of change
     change = randint(-1, 1)
-    while randint(0,99) < 20: # !(rand() % 5) (20% chance to go further)
+    while randint(0,99) < LAYER_MUTATE_CHANCE: # !(rand() % 5) (20% chance to go further)
             change += SGN(change)
             if ABS(change) > 2: # limit to ±3
                 break
@@ -347,6 +363,26 @@ def selection(population: typing.List[Chromosome], n: int) -> typing.List[Chromo
     # return the best half
     return sorted_population[:n]
 
+def mixed_selection(population: typing.List[Chromosome], n: int,
+                    p: float = SELECTION_PRESSURE, guarantee=3)  -> typing.List[Chromosome]:
+    assert not dup_check(population)
+    sorted_population = selection(population, len(population))
+    elite = sorted_population[:guarantee]
+    active_participants = sorted_population[guarantee:]
+    highest = active_participants[0].fitness
+    lowest = active_participants[-1].fitness
+    diff = highest-(lowest*p)
+    fitnesses = [(c.fitness-(lowest*p))/diff for c in active_participants]
+    wheel = []
+    for i, f in enumerate(fitnesses):
+        wheel += [i] * ceil(f * 50)
+    selected = []
+    for i in range(n-guarantee):
+        s = choice(wheel)
+        selected.append(active_participants[s])
+        wheel = [c for c in wheel if c != s]
+
+    return elite + selected
 
 # fisher-yates (google for C implementation).
 def shuffle(array, n):
@@ -365,13 +401,40 @@ def bt_selection(population: typing.List[Chromosome], n: int) -> typing.List[typ
     pairs = []
     for _ in range(n//2):
         # select first
+        assert not dup_check(population)
         c1, c2, c3, c4 = shuffle(population, len(population))[:4]
+        assert not dup_check(population)
         parent1 = c1 if (c1.fitness>c2.fitness) else c2
         parent2 = c3 if (c3.fitness>c4.fitness) else c4
         pairs.append((parent1, parent2))
 
     return pairs
 
+def remove_duplicates(cmp: typing.List[Chromosome], population: typing.List[Chromosome]) -> int:
+    cmp_str = list(map(str, cmp))
+    rm = 0
+    passed = []
+    for c in population[:]:
+        if str(c) in cmp_str or str(c) in passed:
+            population.remove(c)
+            rm += 1
+        else:
+            passed.append(str(c))
+    # print("removed:", rm, " leftover:", len(population))
+    return len(population)
+
+def dup_check(population: typing.List[Chromosome]):
+    passed = []
+    dups = 0
+    for c in population:
+        if str(c) in passed:
+            dups += 1
+            # print("dup:",str(c))
+        else:
+            passed.append(str(c))
+    if dups:
+        print("dups:", dups)
+    return (dups!=0)
 
 @dataclass
 class Assessor:
@@ -405,12 +468,15 @@ class Assessor:
         # print("total max power:", total_lat, max_lat, power)
         res = self.objective(total_lat, max_lat, power)
         # print("res:", res)
-        return -res
+        chromosome.est_lat=total_lat
+        chromosome.est_fps=1000/max_lat
+        return 100000/res
 
 
 def genetic_algorithm(population_size: int, #mutation_rate: int,
         target_latency: int, target_fps: int, time_limit: float,
-        staleness_limit: int, save: bool = True, warm: str = None) -> Chromosome:
+        staleness_limit: int, save: str = "auto",
+        save_location = None, warm: str = None) -> Chromosome:
     """Runs the genetic algorithm."""
     end_time = time() + time_limit
 
@@ -420,6 +486,8 @@ def genetic_algorithm(population_size: int, #mutation_rate: int,
 
     # initialize population
     population = initialize_population(population_size, assessor, warm)
+    # print("initial dup check")
+    assert not dup_check(population)
 
     last_update = 0
     best_fitness = -inf
@@ -427,19 +495,22 @@ def genetic_algorithm(population_size: int, #mutation_rate: int,
     # run until improvement stops or time limit reached.
     dbg_idx = 0
     while last_update < staleness_limit and time() < end_time:
+        # print()
         last_update += 1
         dbg_idx += 1
         if not dbg_idx % 5:
             print("generation:", dbg_idx)
         # select parents
+        # print("dup check")
+        assert not dup_check(population)
         parents = bt_selection(population, population_size//2)
 
-        random_individual = population[9]
+        # random_individual = population[9]
 
         # create children
         children = [] # C: chromosome *children[n]: {0}
         for i in range((population_size//2) // 2): # aka >>2
-            children += crossover(*parents[i], random_individual)
+            children += crossover(*parents[i])
 
         # print("c:", len(children))
         # mutate children
@@ -450,11 +521,26 @@ def genetic_algorithm(population_size: int, #mutation_rate: int,
         for i in range(len(children)):
             children[i] = mutate(children[i]) #, mutation_rate)
 
+        # print("self cross check")
+        # cross_check(population,population)
+        remove_duplicates(population, children)
+        # print("second dup check")
+        # cross_check(population, children)
         # record child fitness
         assess_population(children, len(children), assessor)
         # print('assessed children of gen', dbg_idx)
         # select survivors
-        population = selection(population,population_size-len(children)) + children
+        # print("dup check 2")
+        assert not dup_check(population)
+        population = mixed_selection(population,population_size-len(children))
+        # print("dup check 3")
+        assert not dup_check(population)
+        # print("pop children cross check")
+        # cross_check(population, children)
+        population = population + children
+        # print("third dup check")
+        # dup_check(population)
+        assert not dup_check(population)
         # C: replace list with sorted list and free all non-surviving.
 
         best = selection(population, population_size)[0]
@@ -463,7 +549,9 @@ def genetic_algorithm(population_size: int, #mutation_rate: int,
             best_fitness = best.fitness
             # for c in population:
             #     print(str(c))
-            print("new most fit individual:", str(best), f"fitness={best.fitness}")
+            print("new most fit individual:", str(best), f"fitness={best.fitness:.2f}, est_lat={best.est_lat:.2f}, est_fps={best.est_fps:.2f}")
+        if best.fitness < best_fitness:
+            print("best fitness lowered")
     if last_update >= staleness_limit:
         print("staleness limit reached")
     if time() >= end_time:
@@ -472,11 +560,11 @@ def genetic_algorithm(population_size: int, #mutation_rate: int,
     # return best chromosome
     population = selection(population, population_size)
     record_fitness = 0
-    if save == "auto":
-        with open("ga_population.txt", "r") as f:
+    if save_location and save == "auto":
+        with open(save_location, "r") as f:
             record_fitness = float(f.readline().strip())
-    if save == "force" or save == "auto" and best_fitness > record_fitness:
-        with open("ga_population.txt", "w") as f:
+    if save_location and (save == "force" or save == "auto" and best_fitness > record_fitness):
+        with open(save_location, "w") as f:
             f.write(f"{best_fitness}\n")
             f.write("\n".join([chro.__str__() for chro in population]))
     # for c in population:
@@ -496,9 +584,9 @@ def chromosome_to_config(chromosome: Chromosome):
 # dbg
 if __name__ == "__main__":
     pop_size = POPULATION_SIZE
-    target_lat = 120
-    target_fps = 10
+    target_lat = 80
+    target_fps = 2
     t_limit = 3*60
-    s_limit = 50
+    s_limit = 40
     res = genetic_algorithm(pop_size, target_lat, target_fps, t_limit, s_limit)
     print(res)
