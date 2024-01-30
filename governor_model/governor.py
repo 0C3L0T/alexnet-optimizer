@@ -29,9 +29,10 @@ def govern(target_latency: float, target_fps: float):
     adjusted_fps = target_fps
     win = False
     warm=None
+    open("warmstart.txt", "w").close()
     # print("hi")
     while not win:
-        pp1, pp2, bfreq, lfreq = chromosome_to_config(genetic_algorithm(100, adjusted_latency, adjusted_fps, 60, 50, save="force", warm=warm, save_location="warmstart.txt"))
+        pp1, pp2, bfreq, lfreq = chromosome_to_config(genetic_algorithm(100, adjusted_latency, adjusted_fps, 60, 50, save="force", warm=False, save_location="warmstart.txt"))
         print(f"Trying configuration:\npp1:{pp1}, pp2:{pp2}, Big frequency:{bfreq}, Small frequency:{lfreq}\n")
         process.stdin.write(f"echo {lfreq} > /sys/devices/system/cpu/cpufreq/policy0/scaling_max_freq\n") # little
         process.stdin.write(f"echo {bfreq} > /sys/devices/system/cpu/cpufreq/policy2/scaling_max_freq\n") # big
@@ -45,7 +46,6 @@ def govern(target_latency: float, target_fps: float):
         try:
             while True:
                 # Read the output from the ADB shell
-                print("hrrr")
                 output = process.stdout.readline().strip()
                 print("output is:", output)
 
@@ -84,4 +84,13 @@ def govern(target_latency: float, target_fps: float):
 
 
 if __name__ == "__main__":
-    govern(500, 19)
+    if len(sys.argv) != 3:
+        print("requires target latency and fps", file=sys.stderr)
+        exit(0)
+    try:
+        target_latency = float(sys.argv[1])
+        target_fps = float(sys.argv[2])
+    except ValueError:
+        print("targets must be numbers",  file=sys.stderr)
+    #          lat          fps
+    govern(target_latency, target_fps)

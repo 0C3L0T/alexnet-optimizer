@@ -149,37 +149,37 @@ import re
 
 # ### new plot ##################################################################
 
-# # print(multi)
-# orderLabels, orderVals1 = formatToPLT(multi, [], ["order", "fps", "avgPower", "s1_inference", "s1_input", "s2_inference", "s2_input"])
-# orderVals = np.round(np.array(orderVals1[1:]), 0)
-# # print(orderLabels) ['order', 's1_input', 's1_inference', 's2_input', 's2_inference', 'fps', 'avgPower']
+# print(multi)
+orderLabels, orderVals1 = formatToPLT(multi, [], ["order", "fps", "avgPower", "s1_inference", "s1_input", "s2_inference", "s2_input"])
+orderVals = np.round(np.array(orderVals1[1:]), 0)
+# print(orderLabels) ['order', 's1_input', 's1_inference', 's2_input', 's2_inference', 'fps', 'avgPower']
 
-# orders = orderVals1[0]
-# trunc_orders = [order[:3] for order in orders]
-# di = {ord('B'): 'Big', ord('G'): 'GPU', ord('L'): 'Little'}
-# expanded_orders = [order.translate(di) for order in trunc_orders]
+orders = orderVals1[0]
+trunc_orders = [order[:3] for order in orders]
+di = {ord('B'): 'Big', ord('G'): 'GPU', ord('L'): 'Little'}
+expanded_orders = [order.translate(di) for order in trunc_orders]
 
-# # print(orderVals[1])
-# # print(orderVals[2])
-# s1_total = orderVals[0] + orderVals[1]
-# s2_total = orderVals[2] + orderVals[3]
-# fps = orderVals[4]
-# power = orderVals[5]/1000
+# print(orderVals[1])
+# print(orderVals[2])
+s1_total = orderVals[0] + orderVals[1]
+s2_total = orderVals[2] + orderVals[3]
+fps = orderVals[4]
+power = orderVals[5]/1000
 
-# data1 = [s1_total, s2_total]
-# data1stacked = {
-#     'Conv layers ': {'input': orderVals[0], 'inference': orderVals[1]},
-#     'Fully connected layers ': {'input': orderVals[2], 'inference': orderVals[3]}
-# }
-# data2 = [ fps, power]
-# labels1 = ["Conv layers", "Fully connected layers"]
-# labels2 = ["FPS", "Power"]
+data1 = [s1_total, s2_total]
+data1stacked = {
+    'Conv layers ': {'input': orderVals[0], 'inference': orderVals[1]},
+    'Fully connected layers ': {'input': orderVals[2], 'inference': orderVals[3]}
+}
+data2 = [ fps, power]
+labels1 = ["Conv layers", "Fully connected layers"]
+labels2 = ["FPS", "Power"]
 
 # fig, ax = plt.subplots()
 
 # colors = ["tab:blue", "tab:orange", "tab:gray"]
 
-# x = np.arange(len(orders))  # the label locations
+x = np.arange(len(orders))  # the label locations
 # width = 0.45  # the width of the bars
 # multiplier = 0
 # print(data1stacked)
@@ -208,36 +208,36 @@ import re
 
 # ### new plot ##################################################################
 
-# fig, ax1 = plt.subplots()
-# width = 0.25
-# multiplier = 0
+fig, ax1 = plt.subplots()
+width = 0.25
+multiplier = 0
 
-# color = 'tab:red'
-# ax1.set_ylabel('FPS', color=color)  # we already handled the x-label with ax1
-# offset = width*0.9 * multiplier
-# rects = ax1.bar(x + offset, data2[0], width, label=labels2[0], color=color)
-# ax1.tick_params(axis='y', labelcolor=color)
+color = 'tab:red'
+ax1.set_ylabel('FPS', color=color)  # we already handled the x-label with ax1
+offset = width*0.9 * multiplier
+rects = ax1.bar(x + offset, data2[0], width, label=labels2[0], color=color)
+ax1.tick_params(axis='y', labelcolor=color)
 
+multiplier += 1
+ax2 = ax1.twinx()  # instantiate a second axes that shares the same x-axis
+
+color = 'tab:blue'
+ax2.set_ylabel('Power (W)', color=color)
+offset = width*1.1 * multiplier
+rects = ax2.bar(x + offset, data2[1], width, label=labels2[1], color=color)
+ax1.bar_label(rects, padding=3)
+ax2.tick_params(axis='y', labelcolor=color)
 # multiplier += 1
-# ax2 = ax1.twinx()  # instantiate a second axes that shares the same x-axis
 
-# color = 'tab:blue'
-# ax2.set_ylabel('Power (W)', color=color)
-# offset = width*1.1 * multiplier
-# rects = ax2.bar(x + offset, data2[1], width, label=labels2[1], color=color)
-# ax.bar_label(rects, padding=3)
-# ax2.tick_params(axis='y', labelcolor=color)
-# # multiplier += 1
-
-# ax1.set_title('FPS and Power by AlexNet part for various Pipe-ALL configurations')
-# ax1.set_xticks(x + 0.5*width, expanded_orders)
-# # ax1.legend(loc='upper left', ncols=3)
-# # ax1.set_ylim(0, 270)
+ax1.set_title('FPS and Power by AlexNet part for various Pipe-ALL configurations')
+ax1.set_xticks(x + 0.5*width, expanded_orders)
+ax1.legend(loc='upper left', ncols=3)
+ax1.set_ylim(0, 270)
 
 
-# # fig.tight_layout()  # otherwise the right y-label is slightly clipped
-# # plt.title("GPU on, modulating big frequency")
-# plt.show()
+# fig.tight_layout()  # otherwise the right y-label is slightly clipped
+# plt.title("GPU on, modulating big frequency")
+plt.show()
 
 # ### new plot ##################################################################
 

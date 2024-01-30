@@ -33,7 +33,7 @@ print(command)
 process.stdin.write(command)
 process.stdin.flush()
 
-with open("example_governer_measurements.txt", "a") as file:
+with open("example_governor_measurements.txt", "a") as file:
     file.write(f"lat={latency}, fps={fps}\n")
 
 while True:
@@ -44,7 +44,7 @@ while True:
 
         duration = time() - start_time
 
-        with open("example_governer_measurements.txt", "a") as file:
+        with open("example_governor_measurements.txt", "a") as file:
              file.write(f"{result}, {duration}\n\n")
 
 
@@ -54,7 +54,7 @@ while True:
     elif output == "No Solution Found":
         duration = time() - start_time
 
-        with open("example_governer_measurements.txt", "a") as file:
+        with open("example_governor_measurements.txt", "a") as file:
              file.write(f"no solution, {duration}\n\n")
         break
 

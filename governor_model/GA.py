@@ -11,10 +11,10 @@ from copy import deepcopy
 from math import ceil
 
 # HYPERPARAMETERS WE SHOULD TEST
-LATENCY_PENALTY = 5000000
-FPS_PENALTY = 5000
-POPULATION_SIZE = 100
-SELECTION_PRESSURE = -1.0
+LATENCY_PENALTY = 200
+FPS_PENALTY = 200
+POPULATION_SIZE = 200
+SELECTION_PRESSURE = 1.0
 LAYER_MUTATE_CHANCE = 70
 
 
@@ -50,6 +50,7 @@ class Chromosome:
     fitness: float = 0.0
     est_lat: float = 0.0
     est_fps: float = 0.0
+    est_pwr: float = 0.0
 
     def __getitem__(self, item):
         return self.genes[item]
@@ -130,7 +131,9 @@ def initialize_population(population_size: int, assessor = None, import_path: st
     """Initialize a population of chromosomes."""
 
     if import_path:
-        return load_population(import_path)
+        population = load_population(import_path)
+        assess_population(population, len(population), assessor)
+        return population
 
     population = []
     popul_str = []
@@ -372,7 +375,10 @@ def mixed_selection(population: typing.List[Chromosome], n: int,
     highest = active_participants[0].fitness
     lowest = active_participants[-1].fitness
     diff = highest-(lowest*p)
-    fitnesses = [(c.fitness-(lowest*p))/diff for c in active_participants]
+    try:
+        fitnesses = [(c.fitness-(lowest*p))/diff for c in active_participants]
+    except ZeroDivisionError:
+        print(highest, lowest, p)
     wheel = []
     for i, f in enumerate(fitnesses):
         wheel += [i] * ceil(f * 50)
@@ -445,7 +451,7 @@ class Assessor:
     f_penalty_c: float
 
     def __post_init__(self):
-        self.max_lat_target = 1/self.f_target
+        self.max_lat_target = 1000/self.f_target
         self.s1, self.s2, self.s3 = build_perf_predictors()
 
     def penalty_l(self, latency):
@@ -455,7 +461,7 @@ class Assessor:
         return max(0, self.f_penalty_c * (max_lat - self.max_lat_target))
 
     def objective(self, latency, max_lat, power):
-        return power + self.penalty_l(latency) + self.penalty_f(max_lat)
+        return 1e-6*power + self.penalty_l(latency) + self.penalty_f(max_lat)
 
     def assess(self, chromosome: Chromosome) -> float:
         """Assesses a chromosome."""
@@ -470,7 +476,9 @@ class Assessor:
         # print("res:", res)
         chromosome.est_lat=total_lat
         chromosome.est_fps=1000/max_lat
-        return 100000/res
+        chromosome.est_pwr=power
+        assert res != 0
+        return 1000/res
 
 
 def genetic_algorithm(population_size: int, #mutation_rate: int,
@@ -480,6 +488,8 @@ def genetic_algorithm(population_size: int, #mutation_rate: int,
     """Runs the genetic algorithm."""
     end_time = time() + time_limit
 
+    print("target latency:", target_latency)
+    print("target fps:", target_fps)
     # initialize assessor
     assessor = Assessor(target_latency, target_fps, LATENCY_PENALTY, FPS_PENALTY)  # function pointer
                                                   # ^ play around with these values!
@@ -520,7 +530,6 @@ def genetic_algorithm(population_size: int, #mutation_rate: int,
 
         for i in range(len(children)):
             children[i] = mutate(children[i]) #, mutation_rate)
-
         # print("self cross check")
         # cross_check(population,population)
         remove_duplicates(population, children)
@@ -549,7 +558,7 @@ def genetic_algorithm(population_size: int, #mutation_rate: int,
             best_fitness = best.fitness
             # for c in population:
             #     print(str(c))
-            print("new most fit individual:", str(best), f"fitness={best.fitness:.2f}, est_lat={best.est_lat:.2f}, est_fps={best.est_fps:.2f}")
+            print("new most fit individual:", str(best), f"fitness={best.fitness:.2f}, est_lat={best.est_lat:.2f}, est_fps={best.est_fps:.2f}, est_pwr={best.est_pwr:.4f}")
         if best.fitness < best_fitness:
             print("best fitness lowered")
     if last_update >= staleness_limit:
