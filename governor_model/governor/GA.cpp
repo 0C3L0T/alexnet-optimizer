@@ -7,6 +7,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include <string>
+
 #include "GA.h"
 #include "algorithm"
 #include "fitness.h"
@@ -59,6 +61,26 @@ chromosome create_random_chromosome() {
   c.fitness  = 0.0;
 
   return c;
+}
+
+int chromosome_operator_equal(chromosome* a, chromosome* b) {
+  // Return 1 if the two chromosomes are equivalent, 0 otherwise
+  // Compare genes[*].layers, genes[0].frequency_level, genes[2].frequency_level
+
+  // Handle invalid input
+  if (a == NULL || b == NULL) return 0;
+
+  for (int i = 0; i < 3; ++i) {
+    gene* g1 = a->genes[i];
+    gene* g2 = b->genes[i];
+
+    // Handle invalid input
+    if (g1 == NULL || g2 == NULL) return 0;
+    if (g1->layers != g2->layers) return 0;
+  }
+
+  if (a->genes[0]->frequency_level != b->genes[0]->frequency_level) return 0;
+  if (a->genes[2]->frequency_level != b->genes[2]->frequency_level) return 0;
 }
 
 // Function to write the string representation of a chromosome to a buffer
@@ -209,13 +231,30 @@ void mutate(chromosome* c) {
   mutate_frequency(c);
 }
 
+int remove_duplicates(chromosome* population, int size) {
+  int duplicates = 0;
+
+  // Remove duplicates from population (using chromosome_operator_equal)
+  for (int i = 0; i < size; i++) {
+    for (int j = i + 1; j < size - duplicates; j++) {
+      if (chromosome_operator_equal(&population[i], &population[j])) {
+        duplicates++;
+        population[j] = population[size - duplicates];
+      }
+    }
+  }
+
+  // return new size
+  return size - duplicates;
+}
+
 /***
  * Apply fitness function to every individual of population of size
  * @param population chromosome array
  * @param size int
  * @param fitness function pointer that takes chromosome pointer and outputs float
  */
-void asses_population(population population, int size, float (*fitness)(chromosome*)) {
+void assess_population(population population, int size, float (*fitness)(chromosome*)) {
   for (int i = 0; i < size; i++) {
     population[i].fitness = fitness(&population[i]);
   }
@@ -309,17 +348,18 @@ chromosome genetic_algorithm(int population_size,  // HAS TO BE EVEN
   chromosome* parents    = (chromosome*) malloc(sizeof(chromosome) * population_size / 2);
 
   initialize_population(population, population_size);
-  asses_population(population, population_size, fitness_function);
+  assess_population(population, population_size, fitness_function);
 
-  int   last_update  = 0;
-  float best_fitness = 0.0;
+  int   last_update             = 0;
+  float best_fitness            = 0.0;
+  int   current_population_size = population_size;
 
   while (last_update < staleness_limit) {
     // selected individuals are copied to parents array
     bt_selection(population, parents, population_size);
 
     // sort population
-    asses_population(population, population_size, fitness_function);
+    assess_population(population, population_size, fitness_function);
     quick_sort(population, 0, population_size - 1);
 
     // parents in-place crossover to children
@@ -330,7 +370,7 @@ chromosome genetic_algorithm(int population_size,  // HAS TO BE EVEN
     // free bottom half and override with children
     for (int i = 0; i < population_size / 2; i++) {
       free_chromosome_genes(population[population_size - i]);
-      population[population_size - 1] = parents[i];
+      population[population_size - i] = parents[i];
     }
 
     // check staleness
