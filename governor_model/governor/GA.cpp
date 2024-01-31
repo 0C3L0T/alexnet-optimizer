@@ -53,7 +53,7 @@ chromosome create_random_chromosome() {
 
   // create genes
   gene* big_gene    = create_gene(BIG, pp1, bigFrequencyLevel);
-  gene* gpu_gene    = create_gene(GPU, pp2 - pp1, bigFrequencyLevel);
+  gene* gpu_gene    = create_gene(GPU, pp2 - pp1, 0);
   gene* little_gene = create_gene(LITTLE, NETWORK_SIZE - pp2, littleFrequencyLevel);
 
   chromosome c;
@@ -244,7 +244,7 @@ void mutate_layer_size(chromosome* c) {
     change -= std::max(0, c->genes[0]->layers + c->genes[1]->layers + change - NETWORK_SIZE);  // L3 min size 0
   } else {
     change -= std::min(0, c->genes[0]->layers + change - 1);  // L1 min size 1
-    change += std::max(0, c->genes[1]->layers - change);      // L2 min size 0
+    change += std::min(0, c->genes[1]->layers - change);      // L2 min size 0
   }
 
   // apply change
