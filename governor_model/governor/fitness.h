@@ -8,4 +8,4 @@
 
 float fitness(chromosome* c);
 
-#endif //EMBEDDEDSYSTEMS_FITNESS_H
+#endif  // EMBEDDEDSYSTEMS_FITNESS_H
