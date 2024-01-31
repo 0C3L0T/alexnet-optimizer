@@ -139,11 +139,11 @@ void govern(float target_latency, float target_fps) {
   int big_freq;
   int little_freq;
 
-  Chromosome last_attempt;
+  chromosome last_attempt;
 
   while (!win) {
     // pass requirements to GA
-    Chromosome solution =
+    chromosome solution =
         genetic_algorithm(
           population_size,
           target_latency,
@@ -215,8 +215,6 @@ int main(int argc, char* argv[]) {
 
   // Parse staleness limit
   int staleness_limit = std::stoi(argv[4]);
-
-  float (*fitness_function)(chromosome*);
 
   setup();
 
