@@ -130,15 +130,13 @@ void free_chromosome_genes(chromosome c) {
 }
 
 int is_duplicate(chromosome* population, int size, chromosome* c) {
-    int found = 1;
-    for (int i = 0; i < size; i++) {
-        if (chromosome_operator_equal(&population[i], c)) {
-            found = !found;
-            break;
-        }
+  for (int i = 0; i < size; i++) {
+    if (chromosome_operator_equal(&population[i], c)) {
+      return 1;
     }
+  }
 
-  return found;
+  return 0;
 }
 
 /***
@@ -379,16 +377,14 @@ void bt_selection(population population, vector<chromosome> *parents, int size) 
 }
 
 
-int is_duplicate_vec(vector<chromosome> *parents, chromosome* c) {
-    int found = 1;
-    for (int i = 0; i < parents->size(); i++) {
-        if (chromosome_operator_equal(&(*parents)[i], c)) {
-            found = !found;
-            break;
+int cross_dup_check(chromosome* population, int n, chromosome* c) {
+    for (int i = 0; i < n; i++) {
+        if (chromosome_operator_equal(&population[i], c)) {
+            return 1;
         }
     }
 
-    return found;
+    return 0;
 }
 
 
