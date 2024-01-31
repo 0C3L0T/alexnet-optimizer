@@ -2,8 +2,9 @@
 // Created by ocelot on 1/29/24.
 //
 
-#include "GA.h"
 #include <algorithm>
+#include "fitness.h"
+#include "GA.h"
 
 #define BASELINE_AMPS 0.45
 #define  BF_BASE 0.080     // bigamp(500000)
@@ -14,7 +15,7 @@
 #define GPU_AMP 0.12  // GPU power is constant since we can't control the frequency.
 
 
-double LEVELS[] = {
+const double levels[] = {
     500000, 667000, 1000000, 1200000, 1398000, 1512000, 1608000,
     1704000, 1800000, 1908000, 2016000, 2100000, 2208000
 };
@@ -59,13 +60,58 @@ double totalwatts(double lf, double bf, double butil, double gutil, double lutil
     ) * 5.0;
 }
 
-double predict_power(chromosome chromosome_, double l1util, double l2util, double l3util)
+
+double predict_power(chromosome* chromosome_, double* util)
 {
-    double bfreq = LEVELS[chromosome_.genes[0]->frequency_level];
-    double lfreq = LEVELS[chromosome_.genes[2]->frequency_level];
-    return totalwatts(lfreq, bfreq, l1util, l2util, l3util);
+    double bfreq = levels[chromosome_->genes[0]->frequency_level];
+    double lfreq = levels[chromosome_->genes[2]->frequency_level];
+    return totalwatts(lfreq, bfreq, util[0], util[1], util[2]);
 }
 
-double fitness(chromosome* c) {
-    return 0.0;
+void predict_performance(chromosome* chromosome_, double* params,
+                           double* output_latency, double* util)
+{
+    return;
+}
+
+
+double l_target;
+double f_target;
+double l_penalty_c;
+double f_penalty_c;
+double max_lat_target = 1000.0/f_target;
+
+double penalty(double current, double target, double penalty_c)
+{
+    return std::max(0.0, penalty_c * (current - target));
+}
+
+double objective(double latency, double max_lat, double power,
+                 double target_l, double target_f,
+                 double penalty_l, double penalty_f)
+{
+    return (
+        power
+        + penalty(latency, target_l, penalty_l)
+        + penalty(max_lat, target_f, penalty_f)
+    );
+}
+
+double fitness(chromosome* chromosome_,
+               double target_l, double target_f,
+               double penalty_f_c, double penalty_l_c)
+{
+    double model_params[3] = {};
+    double total_max_lat[2] = {};
+    double util[3] = {};
+    predict_performance(chromosome_, model_params, total_max_lat, util);
+    double power = predict_power(chromosome_, util);
+
+    double res = objective(total_max_lat[0], total_max_lat[1], power,
+                           target_l, target_f, penalty_l_c, penalty_f_c);
+
+    chromosome_->est_lat = total_max_lat[0];
+    chromosome_->est_fps = 1000.0/total_max_lat[1];
+    chromosome_->est_pwr = power;
+    return 1000.0/res;
 }

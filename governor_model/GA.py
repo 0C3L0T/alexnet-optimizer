@@ -512,44 +512,23 @@ def genetic_algorithm(population_size: int, #mutation_rate: int,
         if not dbg_idx % 10:
             print("generation:", dbg_idx)
         # select parents
-        # print("dup check")
-        assert not dup_check(population)
         parents = bt_selection(population, population_size//2)
-
-        # random_individual = population[9]
 
         # create children
         children = [] # C: chromosome *children[n]: {0}
         for i in range((population_size//2) // 2): # aka >>2
             children += crossover(*parents[i])
 
-        # print("c:", len(children))
-        # mutate children
-        # for j, c in enumerate(children):
-            # print(f"child {j}:", str(c))
-
 
         for i in range(len(children)):
-            children[i] = mutate(children[i]) #, mutation_rate)
-        # print("self cross check")
-        # cross_check(population,population)
+            children[i] = mutate(children[i])
+
+
         remove_duplicates(population, children)
-        # print("second dup check")
-        # cross_check(population, children)
-        # record child fitness
         assess_population(children, len(children), assessor)
-        # print('assessed children of gen', dbg_idx)
-        # select survivors
-        # print("dup check 2")
-        assert not dup_check(population)
+
         population = mixed_selection(population,population_size-len(children))
-        # print("dup check 3")
-        assert not dup_check(population)
-        # print("pop children cross check")
-        # cross_check(population, children)
-        population = population + children
-        # print("third dup check")
-        # dup_check(population)
+        population += children
         assert not dup_check(population)
         # C: replace list with sorted list and free all non-surviving.
 

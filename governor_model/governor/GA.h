@@ -21,7 +21,10 @@ typedef struct {
 
 typedef struct {
     gene* genes[3];
-    float fitness;
+    double fitness;
+    float est_lat;
+    float est_fps;
+    float est_pwr;
 } chromosome;
 
 chromosome genetic_algorithm(int population_size,
