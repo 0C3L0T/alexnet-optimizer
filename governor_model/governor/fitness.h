@@ -6,6 +6,6 @@
 #define EMBEDDEDSYSTEMS_FITNESS_H
 #include "GA.h"
 
-float fitness(chromosome* c);
+double fitness(chromosome* chromosome_);
 
 #endif  // EMBEDDEDSYSTEMS_FITNESS_H

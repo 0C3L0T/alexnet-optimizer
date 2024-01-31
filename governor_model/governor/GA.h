@@ -28,9 +28,12 @@ typedef struct {
 } gene;
 
 typedef struct {
-  gene* genes[3];
-  float fitness;
-} Chromosome;
+    gene* genes[3];
+    double fitness;
+    float est_lat;
+    float est_fps;
+    float est_pwr;
+} chromosome;
 
 Chromosome genetic_algorithm(int population_size,
                              int target_latency,
@@ -38,5 +41,5 @@ Chromosome genetic_algorithm(int population_size,
                              int staleness_limit
                             );
 
-void chromosomeToString(const Chromosome* c, char* buffer, size_t bufferSize);
+void chromosomeToString(const chromosome* c, char* buffer, size_t bufferSize);
 #endif  // EMBEDDEDSYSTEMS_GA_H
