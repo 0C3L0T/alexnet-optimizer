@@ -377,9 +377,9 @@ void bt_selection(population population, vector<chromosome> *parents, int size) 
 }
 
 
-int is_duplicate_vec(vector<chromosome> *parents, chromosome* c) {
-    for (int i = 0; i < parents->size(); i++) {
-        if (chromosome_operator_equal(&(*parents)[i], c)) {
+int cross_dup_check(chromosome* population, int n, chromosome* c) {
+    for (int i = 0; i < n; i++) {
+        if (chromosome_operator_equal(&population[i], c)) {
             return 1;
         }
     }
@@ -387,7 +387,9 @@ int is_duplicate_vec(vector<chromosome> *parents, chromosome* c) {
     return 0;
 }
 
-void make_children(vector<chromosome> *parents) {
+
+void make_children(vector<chromosome> *parents, chromosome* population,
+                   int population_size) {
     cout << "Making children.." << endl;
     cout << "Parents size: " << parents->size() << endl;
 
@@ -397,7 +399,7 @@ void make_children(vector<chromosome> *parents) {
         mutate(&(*parents)[i + 1]);
 
         // remove duplicates
-        if (is_duplicate_vec(parents, &(*parents)[i])) {
+        if (cross_dup_check(population, population_size, &(*parents)[i])) {
             cout << "removing duplicate " << i << endl;
             free_chromosome_genes((*parents)[i]);
             parents->erase(parents->begin() + i);
@@ -419,7 +421,7 @@ chromosome genetic_algorithm(int population_size,  // HAS TO BE EVEN
                              int staleness_limit
                             ) {
   chromosome* population = (chromosome*) malloc(sizeof(chromosome) * population_size);
-  vector<chromosome> *parents = new vector<chromosome>(); 
+  vector<chromosome> *parents = new vector<chromosome>();
 
 
   initialize_population(population, population_size);
@@ -436,7 +438,7 @@ chromosome genetic_algorithm(int population_size,  // HAS TO BE EVEN
     bt_selection(population, parents, population_size);
 
     // turn parents vector into children
-    make_children(parents);
+    make_children(parents, population, population_size);
 
     // sort population
     assess_population(population, population_size, fitness_function);
