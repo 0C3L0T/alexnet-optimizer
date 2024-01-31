@@ -13,6 +13,7 @@
 #include "algorithm"
 #include "fitness.h"
 
+
 const int littleFrequency[] = { 500000, 667000, 1000000, 1200000, 1398000, 1512000, 1608000, 1704000, 1800000 };
 const int bigFrequency[]    = { 500000,  667000,  1000000, 1200000, 1398000, 1512000, 1608000,
                                 1704000, 1800000, 1908000, 2016000, 2100000, 2208000 };
@@ -127,6 +128,7 @@ void free_chromosome_genes(chromosome c) {
 void initialize_population(population population, int size) {
   for (int i = 0; i < size; i++) {
     population[i] = create_random_chromosome();
+
   }
 }
 
@@ -342,10 +344,13 @@ void bt_selection(population population, chromosome* parents, int size) {
 chromosome genetic_algorithm(int population_size,  // HAS TO BE EVEN
                              int target_latency,
                              int target_fps,
-                             int staleness_limit,
-                             float (*fitness_function)(chromosome*)) {
+                             int staleness_limit
+                            ) {
   chromosome* population = (chromosome*) malloc(sizeof(chromosome) * population_size);
   chromosome* parents    = (chromosome*) malloc(sizeof(chromosome) * population_size / 2);
+
+  // placeholder
+  float (*fitness_function)(chromosome*);
 
   initialize_population(population, population_size);
   assess_population(population, population_size, fitness_function);
