@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "GA.h"
+#include "fitness.h"
 
 int NETWORK_SIZE = 8;
 

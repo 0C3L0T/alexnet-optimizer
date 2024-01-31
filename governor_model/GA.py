@@ -559,7 +559,7 @@ def genetic_algorithm(population_size: int, #mutation_rate: int,
             best_fitness = best.fitness
             # for c in population:
             #     print(str(c))
-            print("new most fit individual:", str(best), f"fitness={best.fitness:.2f}, est_lat={best.est_lat:.2f}, est_fps={best.est_fps:.2f}, est_pwr={best.est_pwr:.3f} W ({best.est_pwr/5.0:.4f} A)")
+            print(f"new most fit individual: {str(best)}\n fitness={best.fitness:.2f}, est_lat={best.est_lat:.2f}, est_fps={best.est_fps:.2f}, est_pwr={best.est_pwr:.3f} W ({best.est_pwr/5.0:.4f} A)")
         if best.fitness < best_fitness:
             print("best fitness lowered")
     if last_update >= staleness_limit:
