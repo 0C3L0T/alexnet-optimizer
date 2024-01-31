@@ -123,20 +123,29 @@ string chromosomeToString(chromosome chromo) {
     return oss.str();
 }
 
+chromosome copy_chromosome(chromosome c) {
+    chromosome d = c;
+    // copy chromosome
+    d.genes[0] = create_gene(c.genes[0]->type, c.genes[0]->layers, c.genes[0]->frequency_level);
+    d.genes[1] = create_gene(c.genes[1]->type, c.genes[1]->layers, c.genes[1]->frequency_level);
+    d.genes[2] = create_gene(c.genes[2]->type, c.genes[2]->layers, c.genes[2]->frequency_level);
+    return d;
+}
+
 void free_chromosome_genes(chromosome c) {
-  for (int i = 0; i < 3; i++) {
-    free(c.genes[i]);
-  }
+    for (int i = 0; i < 3; i++) {
+        free(c.genes[i]);
+    }
 }
 
 int is_duplicate(chromosome* population, int size, chromosome* c) {
-  for (int i = 0; i < size; i++) {
-    if (chromosome_operator_equal(&population[i], c)) {
-      return 1;
+    for (int i = 0; i < size; i++) {
+        if (chromosome_operator_equal(&population[i], c)) {
+        return 1;
+        }
     }
-  }
 
-  return 0;
+    return 0;
 }
 
 /***
@@ -367,8 +376,8 @@ void bt_selection(population population, vector<chromosome> *parents, int size) 
         chromosome p2 = (c3.fitness > c4.fitness) ? c3 : c4;
 
         // copy values
-        parents->push_back(p1);
-        parents->push_back(p2);
+        parents->push_back(copy_chromosome(p1));
+        parents->push_back(copy_chromosome(p2));
     }
 
     cout << "Parents size after selection: " << parents->size() << endl;
