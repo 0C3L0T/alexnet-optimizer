@@ -35,7 +35,7 @@ typedef struct {
   float  est_pwr = 0.0;
 } chromosome;
 
-Chromosome genetic_algorithm(int population_size, int target_latency, int target_fps, int staleness_limit);
+chromosome genetic_algorithm(int population_size, int target_latency, int target_fps, int staleness_limit);
 
 void chromosomeToString(const chromosome* c, char* buffer, size_t bufferSize);
 #endif  // EMBEDDEDSYSTEMS_GA_H
