@@ -5,7 +5,8 @@ import sys
 from measurementAggregator import parseLine, transpose
 
 ORDER = "B-G-L"
-
+NUDGE = 1.3
+REPETITION_LIMIT = 4
 
 def govern(target_latency: float, target_fps: float):
     # Make sure testGovernor exists on the device
@@ -35,18 +36,18 @@ def govern(target_latency: float, target_fps: float):
     stale_count = 0
 
     while not win:
-        c = genetic_algorithm(100, adjusted_latency, adjusted_fps, 60, 50, save="force", warm=False, save_location="warmstart.txt")
+        c = genetic_algorithm(100, adjusted_latency, adjusted_fps, 30, 40, save="force", warm=warm, save_location="warmstart.txt")
         if str(c) == last_attempt:
             stale_count += 1
         last_attempt = str(c)
         pp1, pp2, bfreq, lfreq = chromosome_to_config(c)
-        print(f"Trying configuration:\npp1:{pp1}, pp2:{pp2}, Big frequency:{bfreq}, Small frequency:{lfreq}\n")
+        print(f"\nTrying configuration:\npp1:{pp1}, pp2:{pp2}, Big frequency:{bfreq}, Small frequency:{lfreq}\n")
         process.stdin.write(f"echo {lfreq} > /sys/devices/system/cpu/cpufreq/policy0/scaling_max_freq\n") # little
         process.stdin.write(f"echo {bfreq} > /sys/devices/system/cpu/cpufreq/policy2/scaling_max_freq\n") # big
         # process.stdin.write("echo hi\n")
         # process.stdin.flush()
         # print(process.stdout.readline().strip())
-        process.stdin.write(f"./graph_alexnet_all_pipe_sync --threads=4  --threads2=2 --n=60 --total_cores=6 --partition_point={pp1} --partition_point2={pp2} --order={ORDER} &> output.txt\n")
+        process.stdin.write(f"./graph_alexnet_all_pipe_sync --threads=4  --threads2=2 --n=20 --total_cores=6 --partition_point={pp1} --partition_point2={pp2} --order={ORDER} &> output.txt\n")
         process.stdin.write(f"./parse_perf\n")
         process.stdin.flush()
 
@@ -62,8 +63,6 @@ def govern(target_latency: float, target_fps: float):
                     timestamp = time.time()
 
                     result = f"[{timestamp}] {output}\n"
-                    # Print the timestamp and the ADB shell output
-                    print(result)
                     _, result = parseLine(result)
                     result = dict(transpose(result))
                     current_fps = result["fps"]
@@ -73,12 +72,16 @@ def govern(target_latency: float, target_fps: float):
                         win = True
                         process.terminate()
                         return
+                    nudged = ""
                     if current_fps < target_fps:
-                        adjusted_fps += target_fps - current_fps
+                        adjusted_fps += (target_fps - current_fps) * NUDGE
+                        nudged = "FPS"
                     if current_latency > target_latency:
-                        adjusted_latency -= current_fps - target_fps
+                        adjusted_latency -= (current_latency - target_latency) * NUDGE
+                        nudged = "latency"
                     warm = "warmstart.txt"
-                    print("Configuration failed to reach performance target.")
+
+                    print(f"Configuration failed to reach {nudged} target.\n")
                     break
 
         except KeyboardInterrupt:
@@ -87,7 +90,7 @@ def govern(target_latency: float, target_fps: float):
             process.terminate()
             break
 
-        if stale_count >= 4:
+        if stale_count >= REPETITION_LIMIT:
             print("Governor can't find a better configuration.")
             process.terminate()
             break

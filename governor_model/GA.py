@@ -508,7 +508,7 @@ def genetic_algorithm(population_size: int, #mutation_rate: int,
         # print()
         last_update += 1
         dbg_idx += 1
-        if not dbg_idx % 5:
+        if not dbg_idx % 10:
             print("generation:", dbg_idx)
         # select parents
         # print("dup check")
