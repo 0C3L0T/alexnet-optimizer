@@ -12,6 +12,9 @@
 #include "GA.h"
 #include "algorithm"
 #include "fitness.h"
+#include <vector>
+
+using namespace std;
 
 
 const int littleFrequency[] = { 500000, 667000, 1000000, 1200000, 1398000, 1512000, 1608000, 1704000, 1800000 };
@@ -82,36 +85,42 @@ int chromosome_operator_equal(chromosome* a, chromosome* b) {
 
   if (a->genes[0]->frequency_level != b->genes[0]->frequency_level) return 0;
   if (a->genes[2]->frequency_level != b->genes[2]->frequency_level) return 0;
+
+  return 1;
 }
 
-// Function to write the string representation of a chromosome to a buffer
-void chromosomeToString(const chromosome* c, char* buffer, size_t bufferSize) {
-  if (c == NULL || buffer == NULL || bufferSize == 0) {
-    // Handle invalid input
-    return;
-  }
-
-  int offset = 0;
-
-  // Write chromosome information to the buffer
-  offset += snprintf(buffer + offset, bufferSize - offset, "Chromosome:\n");
-
-  for (int i = 0; i < 3; ++i) {
-    gene* g = c->genes[i];
-    if (g != NULL) {
-      offset += snprintf(buffer + offset,
-                         bufferSize - offset,
-                         "Type: %d, Layers: %d, Frequency Level: %d\n",
-                         g->type,
-                         g->layers,
-                         g->frequency_level);
+string componentTypeToString(component_type type) {
+    switch (type) {
+        case BIG: return "BIG";
+        case GPU: return "GPU";
+        case LITTLE: return "LITTLE";
+        default: return "UNKNOWN";
     }
-  }
+}
 
-  offset += snprintf(buffer + offset, bufferSize - offset, "Fitness: %f\n", c->fitness);
+string chromosomeToString(chromosome chromo) {
+    ostringstream oss;
 
-  // Ensure null-termination of the buffer
-  buffer[bufferSize - 1] = '\0';
+    // Convert genes to string
+    for (int i = 0; i < 3; ++i) {
+        oss << "Gene " << i + 1 << ": ";
+        if (chromo.genes[i] != nullptr) {
+            oss << "Type: " << componentTypeToString(chromo.genes[i]->type) << ", "
+                << "Layers: " << chromo.genes[i]->layers << ", "
+                << "Frequency Level: " << chromo.genes[i]->frequency_level;
+        } else {
+            oss << "NULL";
+        }
+        oss << "\n";
+    }
+
+    // Convert fitness and estimates to string
+    oss << "Fitness: " << chromo.fitness << "\n";
+    oss << "Estimated Latency: " << chromo.est_lat << "\n";
+    oss << "Estimated FPS: " << chromo.est_fps << "\n";
+    oss << "Estimated Power: " << chromo.est_pwr << "\n";
+
+    return oss.str();
 }
 
 void free_chromosome_genes(chromosome c) {
@@ -120,16 +129,35 @@ void free_chromosome_genes(chromosome c) {
   }
 }
 
+int is_duplicate(chromosome* population, int size, chromosome* c) {
+  for (int i = 0; i < size; i++) {
+    if (chromosome_operator_equal(&population[i], c)) {
+      return 1;
+    }
+  }
+
+  return 0;
+}
+
 /***
  * fill pre-allocated chromosome array of size with random chromosomes
  * @param population
  * @param size
  */
 void initialize_population(population population, int size) {
-  for (int i = 0; i < size; i++) {
-    population[i] = create_random_chromosome();
+    cout << "Initializing population.." << endl;
+    int idx = 0;
+    chromosome c;
 
-  }
+    while (idx < size) {
+        c = create_random_chromosome();
+
+        if (!is_duplicate(population, idx, &c)) {
+            population[idx] = c;
+            idx++;
+        }
+    }
+    cout << "Population initialized.." << endl;
 }
 
 void free_population(population population, int size) {
@@ -145,7 +173,8 @@ void free_population(population population, int size) {
  * @return the amount of layers above network size in chromosome
  */
 int layer_err(chromosome* c) {
-  return c->genes[0]->layers + c->genes[1]->layers + c->genes[2]->layers - NETWORK_SIZE;
+    cout << "Calculating layer error.." << endl;
+    return c->genes[0]->layers + c->genes[1]->layers + c->genes[2]->layers - NETWORK_SIZE;
 }
 
 int sign(int x) {
@@ -153,10 +182,14 @@ int sign(int x) {
 }
 
 void cure_child_cancer(chromosome* c) {
-  while (int err = sign(layer_err(c))) {
-    int gene_index = rand() % 3;
-    c->genes[gene_index]->layers -= err;
-  }
+    cout << "Curing child cancer.." << endl;
+
+    while (int err = sign(layer_err(c))) {
+        int gene_index = rand() % 3;
+        c->genes[gene_index]->layers -= err;
+    }
+
+    cout << "Child cancer cured.." << endl;
 }
 
 /***
@@ -165,16 +198,20 @@ void cure_child_cancer(chromosome* c) {
  * @param c2 chromosome pointer
  */
 void crossover(chromosome* c1, chromosome* c2) {
-  int cut_point = rand() % 2 + 1;
+    cout << "Crossover.." << endl;
+    cout << chromosomeToString(*c1) << endl;
+    cout << chromosomeToString(*c2) << endl;
+    int cut_point = rand() % 2 + 1;
 
-  for (int i = 0; i < cut_point; i++) {
-    gene* temp   = c1->genes[i];
-    c1->genes[i] = c2->genes[i];
-    c2->genes[i] = temp;
-  }
+    for (int i = 0; i < cut_point; i++) {
+        gene* temp   = c1->genes[i];
+        c1->genes[i] = c2->genes[i];
+        c2->genes[i] = temp;
+    }
 
-  cure_child_cancer(c1);
-  cure_child_cancer(c2);
+    cure_child_cancer(c1);
+    cure_child_cancer(c2);
+    cout << "Crossover done.." << endl;
 }
 
 void mutate_layer_size(chromosome* c) {
@@ -182,7 +219,7 @@ void mutate_layer_size(chromosome* c) {
   int pp = rand() % 1;
 
   // change between -1 and 1
-  int change = (rand() % 2) - 1;
+  int change = (rand() % 3) - 1;
 
   // 20% chance to change more
   while (!(random() % 5)) {
@@ -198,7 +235,7 @@ void mutate_layer_size(chromosome* c) {
     change -= std::max(0, c->genes[0]->layers + c->genes[1]->layers + change - NETWORK_SIZE);  // L3 min size 0
   } else {
     change -= std::min(0, c->genes[0]->layers + change - 1);  // L1 min size 1
-    change -= std::max(0, c->genes[1]->layers - change);      // L2 min size 0
+    change += std::max(0, c->genes[1]->layers - change);      // L2 min size 0
   }
 
   // apply change
@@ -229,26 +266,16 @@ void mutate_frequency(chromosome* c) {
 
 // pointer to chromosome
 void mutate(chromosome* c) {
-  mutate_layer_size(c);
-  mutate_frequency(c);
+    cout << "Mutating.." << endl;
+    cout << chromosomeToString(*c) << endl;
+
+    mutate_layer_size(c);
+    mutate_frequency(c);
+
+    cout << "Mutated.." << endl;
+    cout << chromosomeToString(*c) << endl;
 }
 
-int remove_duplicates(chromosome* population, int size) {
-  int duplicates = 0;
-
-  // Remove duplicates from population (using chromosome_operator_equal)
-  for (int i = 0; i < size; i++) {
-    for (int j = i + 1; j < size - duplicates; j++) {
-      if (chromosome_operator_equal(&population[i], &population[j])) {
-        duplicates++;
-        population[j] = population[size - duplicates];
-      }
-    }
-  }
-
-  // return new size
-  return size - duplicates;
-}
 
 /***
  * Apply fitness function to every individual of population of size
@@ -257,9 +284,11 @@ int remove_duplicates(chromosome* population, int size) {
  * @param fitness function pointer that takes chromosome pointer and outputs float
  */
 void assess_population(population population, int size, float (*fitness)(chromosome*)) {
-  for (int i = 0; i < size; i++) {
-    population[i].fitness = fitness(&population[i]);
-  }
+    cout << "Assessing population.." << endl;
+    for (int i = 0; i < size; i++) {
+        population[i].fitness = fitness(&population[i]);
+    }
+    cout << "Population assessed.." << endl;
 }
 
 /***
@@ -296,12 +325,12 @@ int partition(population population, int low, int high) {
  * @param high
  */
 void quick_sort(population population, int low, int high) {
-  if (low < high) {
-    int pi = partition(population, low, high);
+    if (low < high) {
+        int pi = partition(population, low, high);
 
-    quick_sort(population, low, pi - 1);
-    quick_sort(population, pi + 1, high);
-  }
+        quick_sort(population, low, pi - 1);
+        quick_sort(population, pi + 1, high);
+    }
 }
 
 /***
@@ -324,21 +353,64 @@ void shuffle(population population, int size) {
  * @param parents chromosome array
  * @param size
  */
-void bt_selection(population population, chromosome* parents, int size) {
-  for (int i = 0; i < size / 2; i++) {
-    shuffle(population, size);
-    chromosome c1 = population[0];
-    chromosome c2 = population[1];
-    chromosome c3 = population[2];
-    chromosome c4 = population[3];
+void bt_selection(population population, vector<chromosome> *parents, int size) {
+    cout << "Selecting parents.." << endl;
 
-    chromosome p1 = (c1.fitness > c2.fitness) ? c1 : c2;
-    chromosome p2 = (c3.fitness > c4.fitness) ? c3 : c4;
+    for (int i = 0; i < size / 4; i++) {
+        shuffle(population, size);
+        chromosome c1 = population[0];
+        chromosome c2 = population[1];
+        chromosome c3 = population[2];
+        chromosome c4 = population[3];
 
-    // copy values
-    parents[i * 2]     = p1;
-    parents[i * 2 + 1] = p2;
-  }
+        chromosome p1 = (c1.fitness > c2.fitness) ? c1 : c2;
+        chromosome p2 = (c3.fitness > c4.fitness) ? c3 : c4;
+
+        // copy values
+        parents->push_back(p1);
+        parents->push_back(p2);
+    }
+
+    cout << "Parents size after selection: " << parents->size() << endl;
+
+    cout << "Parents selected.." << endl;
+}
+
+
+int is_duplicate_vec(vector<chromosome> *parents, chromosome* c) {
+    for (int i = 0; i < parents->size(); i++) {
+        if (chromosome_operator_equal(&(*parents)[i], c)) {
+            return 1;
+        }
+    }
+
+    return 0;
+}
+
+void make_children(vector<chromosome> *parents) {
+    cout << "Making children.." << endl;
+    cout << "Parents size: " << parents->size() << endl;
+
+    for (int i = 0; i < parents->size(); i += 2) {
+        crossover(&(*parents)[i], &(*parents)[i + 1]);
+        mutate(&(*parents)[i]);
+        mutate(&(*parents)[i + 1]);
+
+        // remove duplicates
+        if (is_duplicate_vec(parents, &(*parents)[i])) {
+            cout << "removing duplicate " << i << endl;
+            free_chromosome_genes((*parents)[i]);
+            parents->erase(parents->begin() + i);
+            i--;
+        }
+    }
+
+    cout << "Children made.." << endl;
+}
+
+// placeholder fitness function
+float fitness_function(chromosome* c) {
+    return 1.0;
 }
 
 chromosome genetic_algorithm(int population_size,  // HAS TO BE EVEN
@@ -347,42 +419,43 @@ chromosome genetic_algorithm(int population_size,  // HAS TO BE EVEN
                              int staleness_limit
                             ) {
   chromosome* population = (chromosome*) malloc(sizeof(chromosome) * population_size);
-  chromosome* parents    = (chromosome*) malloc(sizeof(chromosome) * population_size / 2);
+  vector<chromosome> *parents = new vector<chromosome>(); 
 
-  // placeholder
-  float (*fitness_function)(chromosome*);
 
   initialize_population(population, population_size);
   assess_population(population, population_size, fitness_function);
 
   int   last_update             = 0;
   float best_fitness            = 0.0;
-  int   current_population_size = population_size;
+  int   dbg                     = 0;
+
+  chromosome best_chromosome = population[0];
 
   while (last_update < staleness_limit) {
-    // selected individuals are copied to parents array
+    // fill parents with best half
     bt_selection(population, parents, population_size);
+
+    // turn parents vector into children
+    make_children(parents);
 
     // sort population
     assess_population(population, population_size, fitness_function);
     quick_sort(population, 0, population_size - 1);
 
-    // parents in-place crossover to children
-    for (int i = 0; i < population_size / 2; i += 2) {
-      crossover(&parents[i], &parents[i + 1]);
+    cout << "replacing worst population" << endl;
+    // remove worst population and replace with children
+    for(int i = 0; i < parents->size(); i++) {
+        cout << "replacing " << i << endl;
+        free_chromosome_genes(population[population_size - 1 - i]);
+        population[population_size - 1 - i] = (*parents)[i];
     }
 
-    // free bottom half and override with children
-    for (int i = 0; i < population_size / 2; i++) {
-      free_chromosome_genes(population[population_size - i]);
-      population[population_size - i] = parents[i];
-    }
-
-    // check staleness
-    chromosome best = population[0];
-    if (best.fitness > best_fitness) {
-      best_fitness = best.fitness;
+    cout << "testing for staleness" << endl;
+    // test for staleness
+    if (population[0].fitness > best_fitness) {
+      best_fitness = population[0].fitness;
       last_update  = 0;
+      best_chromosome = population[0];
     } else {
       last_update++;
     }
@@ -390,7 +463,7 @@ chromosome genetic_algorithm(int population_size,  // HAS TO BE EVEN
 
   // free memory
   free_population(population, population_size);
-  free_population(parents, population_size / 2);
+  free(parents);
 
-  return population[0];
+  return best_chromosome;
 }
