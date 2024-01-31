@@ -8,13 +8,12 @@
 #include <stdlib.h>
 
 #include "GA.h"
+#include "algorithm"
 #include "fitness.h"
 
-int NETWORK_SIZE = 8;
-
-int littleFrequency[] = { 500000, 667000, 1000000, 1200000, 1398000, 1512000, 1608000, 1704000, 1800000 };
-int bigFrequency[]    = { 500000,  667000,  1000000, 1200000, 1398000, 1512000, 1608000,
-                          1704000, 1800000, 1908000, 2016000, 2100000, 2208000 };
+const int littleFrequency[] = { 500000, 667000, 1000000, 1200000, 1398000, 1512000, 1608000, 1704000, 1800000 };
+const int bigFrequency[]    = { 500000,  667000,  1000000, 1200000, 1398000, 1512000, 1608000,
+                                1704000, 1800000, 1908000, 2016000, 2100000, 2208000 };
 
 gene* create_gene(component_type type, int layers, int frequency_level) {
   gene* g            = (gene*) malloc(sizeof(gene));
@@ -154,14 +153,6 @@ void crossover(chromosome* c1, chromosome* c2) {
   cure_child_cancer(c2);
 }
 
-int min(int a, int b) {
-  return (a < b) ? a : b;
-}
-
-int max(int a, int b) {
-  return (a > b) ? a : b;
-}
-
 void mutate_layer_size(chromosome* c) {
   // first or second partition point
   int pp = rand() % 1;
@@ -179,11 +170,11 @@ void mutate_layer_size(chromosome* c) {
 
   // clamp to bounds
   if (pp) {
-    change -= min(0, c->genes[1]->layers + change);                                       // L2 min size 0
-    change -= max(0, c->genes[0]->layers + c->genes[1]->layers + change - NETWORK_SIZE);  // L3 min size 0
+    change -= std::min(0, c->genes[1]->layers + change);                                       // L2 min size 0
+    change -= std::max(0, c->genes[0]->layers + c->genes[1]->layers + change - NETWORK_SIZE);  // L3 min size 0
   } else {
-    change -= min(0, c->genes[0]->layers + change - 1);  // L1 min size 1
-    change -= max(0, c->genes[1]->layers - change);      // L2 min size 0
+    change -= std::min(0, c->genes[0]->layers + change - 1);  // L1 min size 1
+    change -= std::max(0, c->genes[1]->layers - change);      // L2 min size 0
   }
 
   // apply change
