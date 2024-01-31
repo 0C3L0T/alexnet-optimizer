@@ -399,11 +399,17 @@ void make_children(vector<chromosome> *parents, chromosome* population,
         mutate(&(*parents)[i + 1]);
 
         // remove duplicates
-        if (cross_dup_check(population, population_size, &(*parents)[i])) {
+        vector<chromosome> passed;
+        if (
+                cross_dup_check(population, population_size, &(*parents)[i]) ||
+                cross_dup_check(&passed[0], passed.size(), &(*parents)[i])
+            ) {
             cout << "removing duplicate " << i << endl;
             free_chromosome_genes((*parents)[i]);
             parents->erase(parents->begin() + i);
             i--;
+        } else {
+            passed.push_back((*parents)[i]);
         }
     }
 
