@@ -6,6 +6,8 @@ from measurementAggregator import parseLine, transpose
 
 ORDER = "B-G-L"
 NUDGE = 1.3
+ANTINUDGE = 0.4
+ANTINDUGE_THRESH = 0.04
 REPETITION_LIMIT = 4
 
 def govern(target_latency: float, target_fps: float):
@@ -79,6 +81,11 @@ def govern(target_latency: float, target_fps: float):
                     if current_latency > target_latency:
                         adjusted_latency -= (current_latency - target_latency) * NUDGE
                         nudged = "latency"
+                    if current_fps > target_fps*(1+ANTINDUGE_THRESH):
+                        adjusted_fps -= (current_fps - target_fps*(1+ANTINDUGE_THRESH)) * ANTINUDGE
+                    if current_latency < target_latency*(1-ANTINDUGE_THRESH):
+                        adjusted_latency += (target_latency*(1-ANTINDUGE_THRESH) - current_latency) * ANTINUDGE
+
                     warm = "warmstart.txt"
 
                     print(f"Configuration failed to reach {nudged} target.\n")
@@ -101,6 +108,7 @@ def govern(target_latency: float, target_fps: float):
 if __name__ == "__main__":
     if len(sys.argv) != 3:
         print("requires target latency and fps", file=sys.stderr)
+        print("usage: governor <latency> <fps>")
         exit(0)
     try:
         target_latency = float(sys.argv[1])

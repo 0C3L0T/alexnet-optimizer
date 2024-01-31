@@ -1,5 +1,6 @@
 from itertools import accumulate
 import typing
+from sys import argv
 from PerformancePredictor import predict_performance, build_perf_predictors
 from PowerPredictor import predict_power
 from time import time
@@ -13,7 +14,7 @@ from math import ceil
 # HYPERPARAMETERS WE SHOULD TEST
 LATENCY_PENALTY = 200
 FPS_PENALTY = 200
-POPULATION_SIZE = 200
+POPULATION_SIZE = 100
 SELECTION_PRESSURE = 1.0
 LAYER_MUTATE_CHANCE = 70
 
@@ -593,9 +594,12 @@ def chromosome_to_config(chromosome: Chromosome):
 # dbg
 if __name__ == "__main__":
     pop_size = POPULATION_SIZE
-    target_lat = 140
-    target_fps = 10
+    target_lat = 130
+    target_fps = 15
     t_limit = 3*60
     s_limit = 40
+    if len(argv) == 3:
+        target_lat = float(argv[1])
+        target_fps = float(argv[2])
     res = genetic_algorithm(pop_size, target_lat, target_fps, t_limit, s_limit)
     print(res)
