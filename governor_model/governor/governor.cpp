@@ -86,7 +86,7 @@ string getOutput(int index, string text) {
   return "";
 }
 
-// return 1 if target performance is met, 0 otherwise
+// return 1 if target performance is met, 0 otherwise and write current to pointers
 int check_performance(int target_fps, int target_latency, int* current_fps, int* current_latency) {
   ifstream myfile("/data/local/Working_dir/output.txt");
 
@@ -120,19 +120,18 @@ int check_performance(int target_fps, int target_latency, int* current_fps, int*
   if (fps >= target_fps && latency <= target_latency) {
     return 1;
   } else {
+    *current_fps = fps;
+    *current_latency = latency;
     return 0;
   }
 }
 
 // optionally implement time
-void govern(float target_latency, float target_fps) {
-  float adjusted_fps     = target_fps;
-  float adjusted_latency = target_latency;
+void govern(int target_latency, int target_fps, int population_size, int staleness_limit) {
+  int adjusted_fps     = target_fps;
+  int adjusted_latency = target_latency;
 
-  bool win             = false;
   int  stale_count     = 0;
-  int  population_size = 100;
-  int  staleness_limit = 40;
 
   int pp1;
   int pp2;
@@ -141,13 +140,12 @@ void govern(float target_latency, float target_fps) {
 
   chromosome last_attempt;
 
-  while (!win) {
+  while (stale_count < staleness_limit) {
     // pass requirements to GA
-    chromosome solution =
-        genetic_algorithm(
+    chromosome solution = genetic_algorithm(
           population_size,
-          target_latency,
-          target_fps,
+          adjusted_latency,
+          adjusted_fps,
           staleness_limit
         );
 
@@ -173,7 +171,7 @@ void govern(float target_latency, float target_fps) {
 
     if (check_performance(target_fps, target_latency, &current_fps, &current_latency)) {
       cout << "Solution found." << endl;
-      win = true;
+      return;
     }
 
     string nudged = "";
@@ -189,13 +187,15 @@ void govern(float target_latency, float target_fps) {
       adjusted_fps -= (current_fps - target_fps*(1 + ANTI_NUDGE_THRESH)) * ANTI_NUDGE;
     } else if (current_latency < target_latency * (1 - ANTI_NUDGE_THRESH)) {
       adjusted_latency += (target_latency * (1 - ANTI_NUDGE_THRESH) - current_latency) * ANTI_NUDGE;
+    }
+    
+    cout << "Configuration failed to reach " << nudged << " target\n";
   }
 
-  cout << "Configuration failed to reach " << nudged << " target\n";
-  break;
+  cout << "Staleness limit reached\n";
 }
 
-int main(int argc, char* argv[]) {
+int main(int argc, char** argv) {
   // Display help message
   cout << "Usage: " << argv[0] << " <Population_Size> <Target_Latency> <Target_FPS> <Staleness_Limit>\n";
 
@@ -218,5 +218,5 @@ int main(int argc, char* argv[]) {
 
   setup();
 
-  govern(target_latency, target_fps);
+  govern(target_latency, target_fps, population_size, staleness_limit);
 }
