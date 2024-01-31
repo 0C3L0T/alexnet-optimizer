@@ -35,3 +35,84 @@ baseline:
 big diff    0.04
 little diff 0.01
 
+
+gpu
+order glb
+4 8
+lo  lo500 : 0.60 -> 0.45
+lo  lo667 : 0.62 -> 0.45
+lo md1000 : 0.64 -> 0.45
+lo md1398 : 0.65 -> 0.45
+lo md1800 : 0.66 -> 0.45
+lo hi2208 : 0.68 -> 0.47
+
+lo hi
+gbl 4 8
+gb       b
+0.93 -> 0.80
+gbl 1 8
+gb       b
+1.00 -> 0.90
+hi hi
+1.03 -> 0.87
+
+lo hi
+bgl
+1 8
+bg       g
+1.29 -> 0.67
+4 8
+bg       g
+1.25 -> 0.69
+
+
+bgl
+hi hi
+3 6
+bgl      gl     l
+1.47 -> 0.84 -> 0.50 # reading error
+1.47 -> 0.84 -> 0.67
+2 5
+1.46 -> 0.84 -> 0.66
+
+glb
+hi hi
+4 8
+gl      l
+0.83 -> 0.64
+
+so some of the g diff comes from b's effort to supply it.
+e.g: 18,17,19 without b running a stage, 0.13,0.10
+
+
+bgl
+4 4
+1.27 -> 0.53
+1.27 -> 0.54
+1.38 -> 0.64
+
+0.75
+
+0.62
+
+hi hi
+bgl 1 8
+1.35 -> 0.75
+
+bgl 1 1
+1.38 -> 0.65
+
+lo hi
+     -> 0.54
+
+bgl 4 4
+hi md1908
+1.15 -> 0.62
+
+
+bgl 4 4
+hi lo
+0.69 -> 0.60
+lo lo
+0.60 -> 0.50
+

@@ -461,16 +461,16 @@ class Assessor:
         return max(0, self.f_penalty_c * (max_lat - self.max_lat_target))
 
     def objective(self, latency, max_lat, power):
-        return 1e-6*power + self.penalty_l(latency) + self.penalty_f(max_lat)
+        return power + self.penalty_l(latency) + self.penalty_f(max_lat)
 
     def assess(self, chromosome: Chromosome) -> float:
         """Assesses a chromosome."""
         try:
-            total_lat, max_lat = predict_performance(chromosome, self.s1, self.s2, self.s3)
+            total_lat, max_lat, *util = predict_performance(chromosome, self.s1, self.s2, self.s3)
         except RuntimeError:
             print("assess RuntimeError print", str(chromosome))
             raise RuntimeError
-        power = predict_power(chromosome)
+        power = predict_power(chromosome, *util)
         # print("total max power:", total_lat, max_lat, power)
         res = self.objective(total_lat, max_lat, power)
         # print("res:", res)
@@ -558,7 +558,7 @@ def genetic_algorithm(population_size: int, #mutation_rate: int,
             best_fitness = best.fitness
             # for c in population:
             #     print(str(c))
-            print("new most fit individual:", str(best), f"fitness={best.fitness:.2f}, est_lat={best.est_lat:.2f}, est_fps={best.est_fps:.2f}, est_pwr={best.est_pwr:.4f}")
+            print("new most fit individual:", str(best), f"fitness={best.fitness:.2f}, est_lat={best.est_lat:.2f}, est_fps={best.est_fps:.2f}, est_pwr={best.est_pwr:.3f} W ({best.est_pwr/5.0:.4f} A)")
         if best.fitness < best_fitness:
             print("best fitness lowered")
     if last_update >= staleness_limit:
@@ -593,8 +593,8 @@ def chromosome_to_config(chromosome: Chromosome):
 # dbg
 if __name__ == "__main__":
     pop_size = POPULATION_SIZE
-    target_lat = 80
-    target_fps = 2
+    target_lat = 140
+    target_fps = 10
     t_limit = 3*60
     s_limit = 40
     res = genetic_algorithm(pop_size, target_lat, target_fps, t_limit, s_limit)

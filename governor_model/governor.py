@@ -28,11 +28,18 @@ def govern(target_latency: float, target_fps: float):
     adjusted_latency = target_latency
     adjusted_fps = target_fps
     win = False
-    warm=None
+    warm = None
     open("warmstart.txt", "w").close()
     # print("hi")
+    last_attempt = ''
+    stale_count = 0
+
     while not win:
-        pp1, pp2, bfreq, lfreq = chromosome_to_config(genetic_algorithm(100, adjusted_latency, adjusted_fps, 60, 50, save="force", warm=False, save_location="warmstart.txt"))
+        c = genetic_algorithm(100, adjusted_latency, adjusted_fps, 60, 50, save="force", warm=False, save_location="warmstart.txt")
+        if str(c) == last_attempt:
+            stale_count += 1
+        last_attempt = str(c)
+        pp1, pp2, bfreq, lfreq = chromosome_to_config(c)
         print(f"Trying configuration:\npp1:{pp1}, pp2:{pp2}, Big frequency:{bfreq}, Small frequency:{lfreq}\n")
         process.stdin.write(f"echo {lfreq} > /sys/devices/system/cpu/cpufreq/policy0/scaling_max_freq\n") # little
         process.stdin.write(f"echo {bfreq} > /sys/devices/system/cpu/cpufreq/policy2/scaling_max_freq\n") # big
@@ -64,6 +71,7 @@ def govern(target_latency: float, target_fps: float):
                     if current_fps >= target_fps and current_latency <= target_latency:
                         print("Solution found.")
                         win = True
+                        process.terminate()
                         return
                     if current_fps < target_fps:
                         adjusted_fps += target_fps - current_fps
@@ -72,11 +80,15 @@ def govern(target_latency: float, target_fps: float):
                     warm = "warmstart.txt"
                     print("Configuration failed to reach performance target.")
                     break
-                print("ouch")
 
         except KeyboardInterrupt:
             # Handle keyboard interrupt (Ctrl+C) to stop the script
             print("Script terminated by user.")
+            process.terminate()
+            break
+
+        if stale_count >= 4:
+            print("Governor can't find a better configuration.")
             process.terminate()
             break
 

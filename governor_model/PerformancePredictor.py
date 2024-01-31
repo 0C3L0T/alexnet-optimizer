@@ -214,8 +214,11 @@ def predict_performance(chromosome, s1, s2, s3) -> tuple[float]:
     if pp2 < 8 and pp2-pp1 == 0:
         total_lat -= max(0, inf_lat1-inf_lat3)
 
+    l1util = inf_lat1/max_lat
+    l2util = inf_lat2/max_lat
+    l3util = inf_lat3/max_lat
     # print(total_lat, max_lat)
-    return total_lat, max_lat
+    return total_lat, max_lat, l1util, l2util, l3util
 
 
 if __name__ == "__main__":
