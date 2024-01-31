@@ -18,10 +18,10 @@ POPULATION_SIZE = 100
 SELECTION_PRESSURE = 1.0
 LAYER_MUTATE_CHANCE = 70
 
-
 NETWORK_SIZE = 8
 SGN = lambda x: (0 < x) - (x < 0)
 ABS = lambda x: x if (x >= 0) else -x
+
 
 class ComponentType(Enum):
     """The type of component."""
@@ -64,7 +64,7 @@ class Chromosome:
         l1 = self.genes[0].layers
         l2 = self.genes[1].layers
         l3 = self.genes[2].layers
-        bigFreqlv = self.genes[0].frequency_level    #note: order hardcoded
+        bigFreqlv = self.genes[0].frequency_level  # note: order hardcoded
         littleFreqLv = self.genes[2].frequency_level
 
         return f"L1:{l1}, L2:{l2}, L3:{l3}, bigFreqLv:{bigFreqlv}, littleFreqLv:{littleFreqLv}"
@@ -100,7 +100,7 @@ def create_random_chromosome() -> Chromosome:
 
 def parse_chromosome(string_rep: str):
     dict_ = dict([tuple(gene.split(":")) for gene in string_rep.split(", ")])
-    for k,v in dict_.items():
+    for k, v in dict_.items():
         dict_[k] = int(v)
 
     # component_names = dict_["Order"]
@@ -128,7 +128,7 @@ def load_population(filepath: str) -> typing.List[Chromosome]:
     return population
 
 
-def initialize_population(population_size: int, assessor = None, import_path: str = None) -> typing.List[Chromosome]:
+def initialize_population(population_size: int, assessor=None, import_path: str = None) -> typing.List[Chromosome]:
     """Initialize a population of chromosomes."""
 
     if import_path:
@@ -158,11 +158,11 @@ def layer_err(a: Chromosome) -> int:
 
 
 def cure_child_cancer(child: Chromosome, dbgchild=None):
-    while layer_err(child):    # in C: while (int err = sgn(layer_err(child1)))
+    while layer_err(child):  # in C: while (int err = sgn(layer_err(child1)))
         # print("child during treatment:", child)
         err = SGN(layer_err(child))
         # print("error during treatment:", err)
-        correction_layer = randint(0,2)
+        correction_layer = randint(0, 2)
         layers = child.genes[correction_layer].layers
         if err < 0 and (correction_layer > 0 and layers >= 7 or layers >= 8):
             continue
@@ -183,8 +183,7 @@ def cure_child_cancer(child: Chromosome, dbgchild=None):
 def crossover(a: Chromosome, b: Chromosome) -> Chromosome:
     """Performs one-point crossover between two chromosomes."""
 
-
-    cut_point = randint(0,1)+1
+    cut_point = randint(0, 1) + 1
     genes1 = a.genes[:cut_point] + b.genes[cut_point:]
     genes2 = b.genes[:cut_point] + a.genes[cut_point:]
     child1 = deepcopy(Chromosome(genes1))
@@ -227,7 +226,6 @@ def crossover(a: Chromosome, b: Chromosome) -> Chromosome:
         print(cut_point)
         raise AssertionError
 
-
     return [child1, child2]
 
 
@@ -253,19 +251,19 @@ def mutate_layer_size(individual: Chromosome) -> Chromosome:
 
     # amount of change
     change = randint(-1, 1)
-    while randint(0,99) < LAYER_MUTATE_CHANCE: # !(rand() % 5) (20% chance to go further)
-            change += SGN(change)
-            if ABS(change) > 2: # limit to ±3
-                break
+    while randint(0, 99) < LAYER_MUTATE_CHANCE:  # !(rand() % 5) (20% chance to go further)
+        change += SGN(change)
+        if ABS(change) > 2:  # limit to ±3
+            break
 
     # clamp
     # beware of boundaries
     if idx:
-        change -= min(0, individual[1].layers + change) #L2 min size 0
-        change -= max(0, individual[0].layers + individual[1].layers + change - NETWORK_SIZE) # L3 min size 0
+        change -= min(0, individual[1].layers + change)  # L2 min size 0
+        change -= max(0, individual[0].layers + individual[1].layers + change - NETWORK_SIZE)  # L3 min size 0
     else:
-        change -= min(0, individual[0].layers + change - 1) #L1 min size 1
-        change += min(0, individual[1].layers - change) #L2 min size 0
+        change -= min(0, individual[0].layers + change - 1)  # L1 min size 1
+        change += min(0, individual[1].layers - change)  # L2 min size 0
 
     # add change to one
     individual[idx].layers += change
@@ -273,7 +271,7 @@ def mutate_layer_size(individual: Chromosome) -> Chromosome:
     # subtract from the other, this will always work since the sum is always NETWORK_SIZE
     individual[idx + 1].layers -= change
 
-    cure_child_cancer(individual)    # pretty sure all's good but just some chemo couldn't hurt right?
+    cure_child_cancer(individual)  # pretty sure all's good but just some chemo couldn't hurt right?
 
     return individual
 
@@ -282,7 +280,7 @@ def mutate_frequency(individual: Chromosome) -> Chromosome:
     """Mutates the frequency of a gene in a chromosome."""
 
     # random gene
-    rand_idx = randint(0, 1)*2     # don't select gpu
+    rand_idx = randint(0, 1) * 2  # don't select gpu
     gene = individual[rand_idx]
 
     # # GPU has no frequency to mutate
@@ -293,7 +291,7 @@ def mutate_frequency(individual: Chromosome) -> Chromosome:
     change = randint(-1, 1)
 
     # limit is the length of the frequency list
-    limit = gene.componentType == ComponentType.BIG and len(BigFrequency)-1 or len(LittleFrequency)-1
+    limit = gene.componentType == ComponentType.BIG and len(BigFrequency) - 1 or len(LittleFrequency) - 1
 
     # beware of boundaries
     if gene.frequency_level + change > limit or gene.frequency_level + change < 0:
@@ -367,36 +365,38 @@ def selection(population: typing.List[Chromosome], n: int) -> typing.List[Chromo
     # return the best half
     return sorted_population[:n]
 
+
 def mixed_selection(population: typing.List[Chromosome], n: int,
-                    p: float = SELECTION_PRESSURE, guarantee=3)  -> typing.List[Chromosome]:
+                    p: float = SELECTION_PRESSURE, guarantee=3) -> typing.List[Chromosome]:
     assert not dup_check(population)
     sorted_population = selection(population, len(population))
     elite = sorted_population[:guarantee]
     active_participants = sorted_population[guarantee:]
     highest = active_participants[0].fitness
     lowest = active_participants[-1].fitness
-    diff = highest-(lowest*p)
+    diff = highest - (lowest * p)
     try:
-        fitnesses = [(c.fitness-(lowest*p))/diff for c in active_participants]
+        fitnesses = [(c.fitness - (lowest * p)) / diff for c in active_participants]
     except ZeroDivisionError:
         print(highest, lowest, p)
     wheel = []
     for i, f in enumerate(fitnesses):
         wheel += [i] * ceil(f * 50)
     selected = []
-    for i in range(n-guarantee):
+    for i in range(n - guarantee):
         s = choice(wheel)
         selected.append(active_participants[s])
         wheel = [c for c in wheel if c != s]
 
     return elite + selected
 
+
 # fisher-yates (google for C implementation).
 def shuffle(array, n):
     arr = array[:]
-    for i in range(n-1,0,-1):
-        j = randint(0,i)
-        arr[i],arr[j] = arr[j],arr[i]
+    for i in range(n - 1, 0, -1):
+        j = randint(0, i)
+        arr[i], arr[j] = arr[j], arr[i]
     return arr
 
 
@@ -406,16 +406,17 @@ def bt_selection(population: typing.List[Chromosome], n: int) -> typing.List[typ
         n -= 1
 
     pairs = []
-    for _ in range(n//2):
+    for _ in range(n // 2):
         # select first
         assert not dup_check(population)
         c1, c2, c3, c4 = shuffle(population, len(population))[:4]
         assert not dup_check(population)
-        parent1 = c1 if (c1.fitness>c2.fitness) else c2
-        parent2 = c3 if (c3.fitness>c4.fitness) else c4
+        parent1 = c1 if (c1.fitness > c2.fitness) else c2
+        parent2 = c3 if (c3.fitness > c4.fitness) else c4
         pairs.append((parent1, parent2))
 
     return pairs
+
 
 def remove_duplicates(cmp: typing.List[Chromosome], population: typing.List[Chromosome]) -> int:
     cmp_str = list(map(str, cmp))
@@ -430,6 +431,7 @@ def remove_duplicates(cmp: typing.List[Chromosome], population: typing.List[Chro
     # print("removed:", rm, " leftover:", len(population))
     return len(population)
 
+
 def dup_check(population: typing.List[Chromosome]):
     passed = []
     dups = 0
@@ -441,7 +443,8 @@ def dup_check(population: typing.List[Chromosome]):
             passed.append(str(c))
     if dups:
         print("dups:", dups)
-    return (dups!=0)
+    return (dups != 0)
+
 
 @dataclass
 class Assessor:
@@ -452,7 +455,7 @@ class Assessor:
     f_penalty_c: float
 
     def __post_init__(self):
-        self.max_lat_target = 1000/self.f_target
+        self.max_lat_target = 1000 / self.f_target
         self.s1, self.s2, self.s3 = build_perf_predictors()
 
     def penalty_l(self, latency):
@@ -475,17 +478,17 @@ class Assessor:
         # print("total max power:", total_lat, max_lat, power)
         res = self.objective(total_lat, max_lat, power)
         # print("res:", res)
-        chromosome.est_lat=total_lat
-        chromosome.est_fps=1000/max_lat
-        chromosome.est_pwr=power
+        chromosome.est_lat = total_lat
+        chromosome.est_fps = 1000 / max_lat
+        chromosome.est_pwr = power
         assert res != 0
-        return 1000/res
+        return 1000 / res
 
 
-def genetic_algorithm(population_size: int, #mutation_rate: int,
-        target_latency: int, target_fps: int, time_limit: float,
-        staleness_limit: int, save: str = "auto",
-        save_location = None, warm: str = None) -> Chromosome:
+def genetic_algorithm(population_size: int,  # mutation_rate: int,
+                      target_latency: int, target_fps: int, time_limit: float,
+                      staleness_limit: int, save: str = "auto",
+                      save_location=None, warm: str = None) -> Chromosome:
     """Runs the genetic algorithm."""
     end_time = time() + time_limit
 
@@ -493,7 +496,7 @@ def genetic_algorithm(population_size: int, #mutation_rate: int,
     print("target fps:", target_fps)
     # initialize assessor
     assessor = Assessor(target_latency, target_fps, LATENCY_PENALTY, FPS_PENALTY)  # function pointer
-                                                  # ^ play around with these values!
+    # ^ play around with these values!
 
     # initialize population
     population = initialize_population(population_size, assessor, warm)
@@ -515,8 +518,8 @@ def genetic_algorithm(population_size: int, #mutation_rate: int,
         parents = bt_selection(population, population_size//2)
 
         # create children
-        children = [] # C: chromosome *children[n]: {0}
-        for i in range((population_size//2) // 2): # aka >>2
+        children = []  # C: chromosome *children[n]: {0}
+        for i in range((population_size // 2) // 2):  # aka >>2
             children += crossover(*parents[i])
 
 
@@ -538,7 +541,8 @@ def genetic_algorithm(population_size: int, #mutation_rate: int,
             best_fitness = best.fitness
             # for c in population:
             #     print(str(c))
-            print(f"new most fit individual: {str(best)}\n fitness={best.fitness:.2f}, est_lat={best.est_lat:.2f}, est_fps={best.est_fps:.2f}, est_pwr={best.est_pwr:.3f} W ({best.est_pwr/5.0:.4f} A)")
+            print("new most fit individual:", str(best),
+                  f"fitness={best.fitness:.2f}, est_lat={best.est_lat:.2f}, est_fps={best.est_fps:.2f}, est_pwr={best.est_pwr:.3f} W ({best.est_pwr / 5.0:.4f} A)")
         if best.fitness < best_fitness:
             print("best fitness lowered")
     if last_update >= staleness_limit:
@@ -560,6 +564,7 @@ def genetic_algorithm(population_size: int, #mutation_rate: int,
     #     print(str(c))
     return population[0]
 
+
 def chromosome_to_config(chromosome: Chromosome):
     """
     Chromosome -> pp1, pp2, bfreq, lfreq
@@ -570,12 +575,13 @@ def chromosome_to_config(chromosome: Chromosome):
     lfreq = LittleFrequency[chromosome[2].frequency_level]
     return pp1, pp2, bfreq, lfreq
 
+
 # dbg
 if __name__ == "__main__":
     pop_size = POPULATION_SIZE
     target_lat = 130
     target_fps = 15
-    t_limit = 3*60
+    t_limit = 3 * 60
     s_limit = 40
     if len(argv) == 3:
         target_lat = float(argv[1])

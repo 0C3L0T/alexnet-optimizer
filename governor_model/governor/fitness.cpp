@@ -6,13 +6,15 @@
 #include "fitness.h"
 #include "GA.h"
 
-#define BASELINE_AMPS 0.45
-#define  BF_BASE 0.080     // bigamp(500000)
-#define  LF_BASE 0.055     // smlamp(500000)
-#define BF_RANGE 0.673     // bigamp(2208000)-bigamp(500000)
-#define LF_RANGE 0.091     // smlamp(1800000)-smlamp(500000)
+#include "GA.h"
+
+#define BASELINE_AMPS       0.45
+#define BF_BASE             0.080  // bigamp(500000)
+#define LF_BASE             0.055  // smlamp(500000)
+#define BF_RANGE            0.673  // bigamp(2208000)-bigamp(500000)
+#define LF_RANGE            0.091  // smlamp(1800000)-smlamp(500000)
 #define BIG_GPU_SUPP_FACTOR 0.13
-#define GPU_AMP 0.12  // GPU power is constant since we can't control the frequency.
+#define GPU_AMP             0.12  // GPU power is constant since we can't control the frequency.
 
 
 const double levels[] = {
@@ -33,58 +35,47 @@ double bigamp(double bf)
     return ans;
 }
 
-double smlamp(double lf)
-{
-    lf = lf*1e-3;
-    return 7.0e-5 * lf + 0.02;
+double smlamp(double lf) {
+  lf = lf * 1e-3;
+  return 7.0e-5 * lf + 0.02;
 }
 
-double scalebf(double bf)
-{
-    return (bigamp(bf)-BF_BASE) / BF_RANGE;
+double scalebf(double bf) {
+  return (bigamp(bf) - BF_BASE) / BF_RANGE;
 }
 
-double scalelf(double lf)
-{
-    return (smlamp(lf)-LF_BASE) / LF_RANGE;
+double scalelf(double lf) {
+  return (smlamp(lf) - LF_BASE) / LF_RANGE;
 }
 
-double totalwatts(double lf, double bf, double butil, double gutil, double lutil)
-{
-    return (
+double totalwatts(double lf, double bf, double butil, double gutil, double lutil) {
+  return (
         BASELINE_AMPS
-        + smlamp(lf)*lutil
-        + bigamp(bf)*butil
-        + BIG_GPU_SUPP_FACTOR*scalebf(bf) * std::max(0.0,gutil-butil)
-        + GPU_AMP*gutil
+        + smlamp(lf) * lutil
+        + bigamp(bf) * butil
+        + BIG_GPU_SUPP_FACTOR * scalebf(bf) * std::max(0.0, gutil - butil)
+        + GPU_AMP * gutil
     ) * 5.0;
 }
 
 
-double predict_power(chromosome* chromosome_, double* util)
-{
+double predict_power(chromosome* chromosome_, double* util) {
     double bfreq = levels[chromosome_->genes[0]->frequency_level];
     double lfreq = levels[chromosome_->genes[2]->frequency_level];
     return totalwatts(lfreq, bfreq, util[0], util[1], util[2]);
 }
 
 void predict_performance(chromosome* chromosome_, double* params,
-                           double* output_latency, double* util)
-{
+                         double* output_latency, double* util) {
     return;
 }
 
-
-double l_target;
-double f_target;
-double l_penalty_c;
-double f_penalty_c;
-double max_lat_target = 1000.0/f_target;
 
 double penalty(double current, double target, double penalty_c)
 {
     return std::max(0.0, penalty_c * (current - target));
 }
+
 
 double objective(double latency, double max_lat, double power,
                  double target_l, double target_f,
@@ -96,6 +87,7 @@ double objective(double latency, double max_lat, double power,
         + penalty(max_lat, target_f, penalty_f)
     );
 }
+
 
 double fitness(chromosome* chromosome_,
                double target_l, double target_f,
