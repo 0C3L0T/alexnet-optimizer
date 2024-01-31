@@ -30,13 +30,13 @@ typedef struct {
 typedef struct {
   gene* genes[3];
   float fitness;
-} chromosome;
+} Chromosome;
 
-chromosome genetic_algorithm(int population_size,
+Chromosome genetic_algorithm(int population_size,
                              int target_latency,
                              int target_fps,
-                             int staleness_limit,
-                             float (*fitness_function)(chromosome*));
+                             int staleness_limit
+                            );
 
-void chromosomeToString(const chromosome* c, char* buffer, size_t bufferSize);
+void chromosomeToString(const Chromosome* c, char* buffer, size_t bufferSize);
 #endif  // EMBEDDEDSYSTEMS_GA_H
