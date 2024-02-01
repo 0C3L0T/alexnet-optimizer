@@ -18,10 +18,10 @@ int LittleFrequencyTable[] = { 500000, 667000, 1000000, 1200000, 1398000, 151200
 int BigFrequencyTable[]    = { 500000,  667000,  1000000, 1200000, 1398000, 1512000, 1608000,
                                1704000, 1800000, 1908000, 2016000, 2100000, 2208000 };
 
-const float NUDGE = 1.3;
-const float ANTI_NUDGE = 0.4;
-const float ANTI_NUDGE_THRESH = 0.04;
-const int REPETITION_LIMIT = 4;
+#define NUDGE             1.3
+#define ANTI_NUDGE        0.4
+#define ANTI_NUDGE_THRESH 0.04
+#define REPETITION_LIMIT  4
 
 void setup() {
     /* Export OpenCL library path */
@@ -87,11 +87,11 @@ string getOutput(int index, string text) {
 }
 
 // return 1 if target performance is met, 0 otherwise and write current to pointers
-int check_performance(int target_fps, int target_latency, int* current_fps, int* current_latency) {
+int check_performance(double target_fps, double target_latency, double* current_fps, double* current_latency) {
     ifstream myfile("/data/local/Working_dir/output.txt");
 
-    int fps = 0;
-    int latency = 0;
+    double fps = 0;
+    double latency = 0;
 
     /* Read Output.txt File and Extract Data */
     for (std::string line; getline(myfile, line);) {
@@ -127,9 +127,9 @@ int check_performance(int target_fps, int target_latency, int* current_fps, int*
 }
 
 // optionally implement time
-void govern(int target_latency, int target_fps, int population_size, int staleness_limit) {
-    int adjusted_fps     = target_fps;
-    int adjusted_latency = target_latency;
+void govern(double target_latency, double target_fps, int population_size, int staleness_limit) {
+    double adjusted_fps     = target_fps;
+    double adjusted_latency = target_latency;
 
     int  stale_count     = 0;
 
@@ -166,8 +166,8 @@ void govern(int target_latency, int target_fps, int population_size, int stalene
         printf("trying configuration: %d %d %d %d\n", pp1, pp2, big_freq, little_freq);
         run_graph(pp1, pp2, big_freq, little_freq);
 
-        int current_fps;
-        int current_latency;
+        double current_fps;
+        double current_latency;
 
         if (check_performance(target_fps, target_latency, &current_fps, &current_latency)) {
             cout << "Solution found." << endl;
@@ -208,10 +208,10 @@ int main(int argc, char** argv) {
     int population_size = std::stoi(argv[1]);
 
     // Parse target latency
-    int target_latency = std::stoi(argv[2]);
+    double target_latency = std::stoi(argv[2]);
 
     // Parse target FPS
-    int target_fps = std::stoi(argv[3]);
+    double target_fps = std::stoi(argv[3]);
 
     // Parse staleness limit
     int staleness_limit = std::stoi(argv[4]);

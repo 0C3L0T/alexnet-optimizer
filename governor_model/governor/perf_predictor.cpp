@@ -42,14 +42,31 @@ double model(matrix m, matrix* params) {
     assert(m.rows == 1);
     assert(m.cols == 8);
 
-    matmul_inplace(m, params[0]);
-    matadd_inplace(m, params[1]);
-    sigmoidv(m);
-    matmul_inplace(m, params[2]);
-    matadd_inplace(m, params[3]);
-    double res = m.data[0][0];
+    // cout << "m.rows " << m.rows << " m.cols" << endl;
+    // cout << "param0 dims: " << params[0].rows << " " << params[0].cols << endl;
+    // cout << "param1 dims: " << params[1].rows << " " << params[1].cols << endl;
+    // cout << "param2 dims: " << params[2].rows << " " << params[2].cols << endl;
+    // cout << "param3 dims: " << params[3].rows << " " << params[3].cols << endl;
+    matrix temp1 = matmul(m, params[0]);
+    // cout << "-1 " << endl;
+    matadd_inplace(temp1, params[1]);
+    // cout << "0 " << endl;
+    // matrix_print(m);
+    sigmoidv(temp1);
+    // matrix_print(m);
+    // cout << "1 " << endl;
+    matrix temp2 = matmul(temp1, params[2]);
+    // cout << "2" << endl;
+    matadd_inplace(temp2, params[3]);
+    // cout << "3" << endl;
+    double res = temp2.data[0][0];
+    // cout << "4" << endl;
     matrix_destroy(m);
+    // cout << "5" << endl;
+    matrix_destroy(temp1);
+    matrix_destroy(temp2);
 
+    // cout << "result is " << res << endl;
     return res;
 }
 
@@ -72,10 +89,18 @@ void predict_performance(chromosome* chromosome_, matrix* params,
     inputs_g.data[0][7] = GHZ/bfreq;
     inputs_l.data[0][7] = GHZ/lfreq;
 
+    cout << "bfreq: " << bfreq << endl;
+    for (int i = 0; i < 8; i++) {
+        cout << "input b no: " << i << ": " << inputs_b.data[0][i] << endl;
+    }
     /* Run models. */
     double inf_lat1 = model(inputs_b, &params[0]);
-    double inf_lat2 = model(inputs_g, &params[2]);
-    double inf_lat3 = model(inputs_l, &params[4]);
+    double inf_lat2 = model(inputs_g, &params[4]);
+    double inf_lat3 = model(inputs_l, &params[8]);
+
+    cout << "inf_lat1 " << inf_lat1 << endl;
+    cout << "inf_lat2 " << inf_lat2 << endl;
+    cout << "inf_lat3 " << inf_lat3 << endl;
 
     /* Calculate total and max latencies*/
     vector<double> active_lat;

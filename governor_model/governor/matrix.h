@@ -5,11 +5,13 @@
 #include <string>
 
 typedef struct {
-  double* core;
-  double** data;
-  size_t rows;
-  size_t cols;
+    double* core;
+    double** data;
+    size_t rows;
+    size_t cols;
 } matrix;
+
+void matrix_print(matrix m);
 
 /* Clean up the memory of a matrix. */
 void matrix_destroy(matrix m);

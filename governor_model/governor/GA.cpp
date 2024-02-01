@@ -126,8 +126,6 @@ chromosome copy_chromosome(chromosome c) {
     d.est_fps = c.est_fps;
     d.est_lat = c.est_lat;
     d.est_pwr = c.est_pwr;
-    for (int i; i < 3; i++) {
-    }
     return d;
 }
 
@@ -369,6 +367,7 @@ void bt_selection(population population, vector<chromosome> *parents, int size) 
 
     for (int i = 0; i < size / 4; i++) {
         shuffle(population, size);
+        // cout << "passed shuffle." << endl;
         chromosome c1 = population[0];
         chromosome c2 = population[1];
         chromosome c3 = population[2];
@@ -376,9 +375,13 @@ void bt_selection(population population, vector<chromosome> *parents, int size) 
 
         chromosome p1 = (c1.fitness > c2.fitness) ? c1 : c2;
         chromosome p2 = (c3.fitness > c4.fitness) ? c3 : c4;
+        // cout << "passed p1 p2 selection." << endl;
 
         // copy values
-        parents->push_back(copy_chromosome(p1));
+        chromosome p1_copy = copy_chromosome(p1);
+        // cout << "passed copy." << endl;
+        parents->push_back(p1_copy);
+        // cout << "passed push." << endl;
         parents->push_back(copy_chromosome(p2));
     }
 
@@ -418,7 +421,7 @@ void make_children(vector<chromosome> *parents, chromosome* population,
                 cross_dup_check(population, population_size, &(*parents)[i]) ||
                 cross_dup_check(&passed[0], passed.size(), &(*parents)[i])
             ) {
-            cout << "removing duplicate " << i << endl;
+            // cout << "removing duplicate " << i << endl;
             free_chromosome_genes((*parents)[i]);
             parents->erase(parents->begin() + i);
             i--;
@@ -456,8 +459,8 @@ chromosome genetic_algorithm(int population_size,  // HAS TO BE EVEN
         "s3_2b.txt"
     };
 
-    size_t rows[] = { 8, 1, 1, 1 };
-    size_t cols[] = { 8, 8, 8, 1 };
+    size_t rows[] = { 8, 1, 8, 1 };
+    size_t cols[] = { 8, 8, 1, 1 };
 
     matrix params[12];
     for (int i = 0; i < 12; i++) {
@@ -473,14 +476,16 @@ chromosome genetic_algorithm(int population_size,  // HAS TO BE EVEN
 
     chromosome best_chromosome = copy_chromosome(population[0]);
 
-    for (unsigned idx = 0;last_update < staleness_limit; idx++) {
+    for (unsigned idx = 0; last_update < staleness_limit; idx++) {
         if (!idx % 10) {
             cout << "generation: " << idx << endl;
         }
         // fill parents with best half
+        // cout << "hi??" << endl;
+
         bt_selection(population, &parents, population_size);
 
-
+        // cout << "hi???" << endl;
         // turn parents vector into children
         make_children(&parents, population, population_size);
 
@@ -500,11 +505,12 @@ chromosome genetic_algorithm(int population_size,  // HAS TO BE EVEN
 
         // test for staleness
         if (population[0].fitness > best_fitness) {
-        best_fitness = population[0].fitness;
-        last_update  = 0;
-        best_chromosome = copy_chromosome(population[0]);
+            best_fitness = population[0].fitness;
+            last_update  = 0;
+            best_chromosome = copy_chromosome(population[0]);
+            cout << "new most fit individual: " << chromosomeToString(best_chromosome) << endl;
         } else {
-        last_update++;
+            last_update++;
         }
     }
     cout << "completed" << endl;

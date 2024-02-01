@@ -38,6 +38,7 @@ double fitness(chromosome* chromosome_,
     double res = objective(total_max_lat[0], total_max_lat[1], power,
                            target_l, target_f, penalty_l_c, penalty_f_c);
 
+    cout << total_max_lat[0] << "  " << 1000.0/total_max_lat[1] << endl;
     chromosome_->est_lat = total_max_lat[0];
     chromosome_->est_fps = 1000.0/total_max_lat[1];
     chromosome_->est_pwr = power;

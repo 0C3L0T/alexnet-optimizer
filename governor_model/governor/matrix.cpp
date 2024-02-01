@@ -8,6 +8,15 @@
 #include <vector>
 using namespace std;
 
+void matrix_print(matrix m) {
+    for (int i = 0; i < m.rows; i++) {
+        for (int j = 0; i < m.cols; j++) {
+            cout << m.data[i][j] << "\t";
+        }
+        cout << endl;
+    }
+    cout << endl << endl;
+}
 
 void matrix_destroy(matrix m) {
     free(m.data);
@@ -16,14 +25,14 @@ void matrix_destroy(matrix m) {
 
 matrix matrix_from_file(string filename, size_t rows, size_t cols) {
     ifstream f(filename);
-    matrix m = matrix_init(8, 8);
+    matrix m = matrix_init(rows, cols);
     /* Read Output.txt File and Extract Data */
     size_t i = 0;
     for (string line; getline(f, line) && i < 8; i++) {
         istringstream ss(line);
         for (size_t j = 0; !ss.eof() && ss.peek()!='\n'; j++) {
-            assert(i < cols);
-            assert(j < rows);
+            assert(i < rows);
+            assert(j < cols);
             char delim;
             ss >> m.data[i][j] >> delim;
         }
@@ -62,11 +71,18 @@ matrix matmul(matrix m1, matrix m2) {
 
     assert(m1.cols == m2.rows);
     matrix res = matrix_init(m1.rows, m2.cols);
-
+    // cout << "m1  shape: " << m1.rows << " " << m1.cols << endl;
+    // cout << "m2  shape: " << m2.rows << " " << m2.cols << endl;
+    // cout << "res shape: " << res.rows << " " << res.cols << endl;
     for (size_t i = 0; i < res.rows; i++) {
         for (size_t j = 0; j < res.cols; j++) {
             for (size_t k = 0; k < m2.rows; k++) {
+                // cout << "ijk: " << i << j << k << endl;
+                // cout << "res i j " << res.data[i][j] << endl;
+                // cout << "m1  i k " << res.data[i][j] << endl;
+                // cout << "m2  k j " << res.data[i][j] << endl;
                 res.data[i][j] += m1.data[i][k] * m2.data[k][j];
+                // cout << "result: " << res.data[i][j] << endl;
             }
         }
     }
@@ -88,6 +104,7 @@ matrix matadd(matrix m1, matrix m2) {
     return res;
 }
 
+/* DONT USE THIS ITS BROKEN */
 void matmul_inplace(matrix m1, matrix m2) {
 
     assert(m1.cols == m2.rows);
