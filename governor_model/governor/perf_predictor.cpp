@@ -78,7 +78,8 @@ void predict_performance(chromosome* chromosome_, matrix* params,
     double inf_lat3 = model(inputs_l, &params[4]);
 
     /* Calculate total and max latencies*/
-    vector<double> active_lat = { inf_lat1 };
+    vector<double> active_lat;
+    active_lat.push_back(inf_lat1);
 
     if (pp2-pp1 > 0) {
         active_lat.push_back(inf_lat2);

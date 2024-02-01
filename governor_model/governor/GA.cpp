@@ -1,18 +1,11 @@
-//
-// Created by ocelot on 1/28/24.
-//
-
-#include "GA.h"
-
 #include <stdio.h>
 #include <stdlib.h>
-
 #include <string>
-
+#include <vector>
 #include "GA.h"
 #include "algorithm"
 #include "fitness.h"
-#include <vector>
+#include "matrix.h"
 
 using namespace std;
 
@@ -298,10 +291,13 @@ void mutate(chromosome* c) {
  * @param size int
  * @param fitness function pointer that takes chromosome pointer and outputs float
  */
-void assess_population(population population, int size, float (*fitness)(chromosome*)) {
+void assess_population(population population, int size, double target_latency,
+                       double target_fps, matrix* params) {
     // cout << "Assessing population.." << endl;
     for (int i = 0; i < size; i++) {
-        population[i].fitness = fitness(&population[i]);
+        population[i].fitness = fitness(
+                &population[i], target_latency, target_fps,
+                GA_FPS_PENALTY, GA_LATENCY_PENALTY, params);
     }
     // cout << "Population assessed.." << endl;
 }
@@ -354,12 +350,12 @@ void quick_sort(population population, int low, int high) {
  * @param size
  */
 void shuffle(population population, int size) {
-  for (int i = size - 1; i > 0; i--) {
-    int        j    = rand() % (i + 1);
-    chromosome temp = population[i];
-    population[i]   = population[j];
-    population[j]   = temp;
-  }
+    for (int i = size - 1; i > 0; i--) {
+        int        j    = rand() % (i + 1);
+        chromosome temp = population[i];
+        population[i]   = population[j];
+        population[j]   = temp;
+    }
 }
 
 /***
@@ -434,22 +430,42 @@ void make_children(vector<chromosome> *parents, chromosome* population,
     // cout << "Children made.." << endl;
 }
 
-// placeholder fitness function
-float fitness_function(chromosome* c) {
-    return 1.0;
-}
 
 chromosome genetic_algorithm(int population_size,  // HAS TO BE EVEN
-                             int target_latency,
-                             int target_fps,
+                             double target_latency,
+                             double target_fps,
                              int staleness_limit
                             ) {
     chromosome* population = (chromosome*) malloc(sizeof(chromosome) * population_size);
     vector<chromosome> parents;
 
+    double inv_fps = 1000/target_fps;
+
+    string param_files[] = {
+        "s1_1w.txt",
+        "s1_1b.txt",
+        "s1_2w.txt",
+        "s1_2b.txt",
+        "s2_1w.txt",
+        "s2_1b.txt",
+        "s2_2w.txt",
+        "s2_2b.txt",
+        "s3_1w.txt",
+        "s3_1b.txt",
+        "s3_2w.txt",
+        "s3_2b.txt"
+    };
+
+    size_t rows[] = { 8, 1, 1, 1 };
+    size_t cols[] = { 8, 8, 8, 1 };
+
+    matrix params[12];
+    for (int i = 0; i < 12; i++) {
+        params[i] = matrix_from_file("weights/" + param_files[i], rows[i%4], cols[i%4]);
+    }
 
     initialize_population(population, population_size);
-    assess_population(population, population_size, fitness_function);
+    assess_population(population, population_size, target_latency, inv_fps, params);
 
     int      last_update             = 0;
     float    best_fitness            = 0.0;
@@ -469,7 +485,7 @@ chromosome genetic_algorithm(int population_size,  // HAS TO BE EVEN
         make_children(&parents, population, population_size);
 
         // sort population
-        assess_population(population, population_size, fitness_function);
+        assess_population(population, population_size, target_latency, inv_fps, params);
         quick_sort(population, 0, population_size - 1);
 
         for(int i = 0; i < parents.size(); i++) {

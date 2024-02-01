@@ -14,7 +14,7 @@ void matrix_destroy(matrix m) {
     free(m.core);
 }
 
-matrix import_from_file(string filename, size_t rows, size_t cols) {
+matrix matrix_from_file(string filename, size_t rows, size_t cols) {
     ifstream f(filename);
     matrix m = matrix_init(8, 8);
     /* Read Output.txt File and Extract Data */
