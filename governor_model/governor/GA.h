@@ -11,39 +11,41 @@
 
 using namespace std;
 
-const int GA_LATENCY_PENALTY     = 200;
-const int GA_FPS_PENALTY         = 200;
-const int GA_POPULATION_SIZE     = 100;
-const int GA_SELECTION_PRESSURE  = 1.0;
-const int GA_LAYER_MUTATE_CHANCE = 70;
+#define GA_LATENCY_PENALTY     50.0
+#define GA_FPS_PENALTY         50.0
+#define GA_POPULATION_SIZE     100
+#define GA_SELECTION_PRESSURE  1.0
+#define GA_LAYER_MUTATE_CHANCE 70
 
-const int NETWORK_SIZE = 8;
+#define NETWORK_SIZE 8
 
 enum component_type {
-  BIG,
-  GPU,
-  LITTLE,
+    BIG,
+    GPU,
+    LITTLE,
 };
 
 typedef struct {
-  component_type type;
-  int            layers;
-  int            frequency_level;
+    component_type type;
+    int            layers;
+    int            frequency_level;
 } gene;
 
 typedef struct {
-  gene*  genes[3];
-  double fitness = 0.0;
-  float  est_lat = 0.0;
-  float  est_fps = 0.0;
-  float  est_pwr = 0.0;
+    gene*  genes[3];
+    double fitness = 0.0;
+    float  est_lat = 0.0;
+    float  est_fps = 0.0;
+    float  est_pwr = 0.0;
 } chromosome;
 
 chromosome genetic_algorithm(int population_size,
-                             int target_latency,
-                             int target_fps,
+                             double target_latency,
+                             double target_fps,
                              int staleness_limit
                             );
+
+chromosome create_random_chromosome();
 
 string chromosomeToString(chromosome chromo);
 

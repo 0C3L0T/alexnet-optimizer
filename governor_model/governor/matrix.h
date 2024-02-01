@@ -1,18 +1,23 @@
 #ifndef EMBEDDEDSYSTEMS_MATRIX_H
 #define EMBEDDEDSYSTEMS_MATRIX_H
 
+#include <stdlib.h>
+#include <string>
+
 typedef struct {
-  double* core;
-  double** data;
-  size_t rows;
-  size_t cols;
+    double* core;
+    double** data;
+    size_t rows;
+    size_t cols;
 } matrix;
+
+void matrix_print(matrix m);
 
 /* Clean up the memory of a matrix. */
 void matrix_destroy(matrix m);
 
 /* Build a matrix from a file. */
-matrix import_from_file(string filename, size_t rows, size_t cols);
+matrix matrix_from_file(std::string filename, size_t rows, size_t cols);
 
 /* Initialise a matrix. */
 matrix matrix_init(size_t rows, size_t cols);

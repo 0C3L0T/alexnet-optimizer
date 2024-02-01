@@ -22,20 +22,20 @@ double bigamp(double bf)
 }
 
 double smlamp(double lf) {
-  lf = lf * 1e-3;
-  return 7.0e-5 * lf + 0.02;
+    lf = lf * 1e-3;
+    return 7.0e-5 * lf + 0.02;
 }
 
 double scalebf(double bf) {
-  return (bigamp(bf) - BF_BASE) / BF_RANGE;
+    return (bigamp(bf) - BF_BASE) / BF_RANGE;
 }
 
 double scalelf(double lf) {
-  return (smlamp(lf) - LF_BASE) / LF_RANGE;
+    return (smlamp(lf) - LF_BASE) / LF_RANGE;
 }
 
 double totalwatts(double lf, double bf, double butil, double gutil, double lutil) {
-  return (
+    return (
         BASELINE_AMPS
         + smlamp(lf) * lutil
         + bigamp(bf) * butil
