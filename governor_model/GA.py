@@ -6,7 +6,7 @@ from PowerPredictor import predict_power
 from time import time
 from dataclasses import dataclass
 from enum import Enum
-from random import randint, choice
+from random import randint, choice, seed
 from numpy import inf
 from copy import deepcopy
 from math import ceil
@@ -491,7 +491,7 @@ def genetic_algorithm(population_size: int,  # mutation_rate: int,
                       save_location=None, warm: str = None) -> Chromosome:
     """Runs the genetic algorithm."""
     end_time = time() + time_limit
-
+    seed()
     print("target latency:", target_latency)
     print("target fps:", target_fps)
     # initialize assessor

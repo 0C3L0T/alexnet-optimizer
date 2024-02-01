@@ -33,6 +33,11 @@ int main(void)
     double latency[2];
     double utils[3];
     chromosome c = create_random_chromosome();
+    c.genes[0]->layers = 2;
+    c.genes[1]->layers = 6;
+    c.genes[2]->layers = 0;
+    c.genes[0]->frequency_level = 8;
+    c.genes[2]->frequency_level = 3;
     predict_performance(&c, params, latency, utils);
 
     cout << "max lat " << latency[0] << endl;

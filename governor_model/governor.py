@@ -5,7 +5,7 @@ import sys
 from measurementAggregator import parseLine, transpose
 
 ORDER = "B-G-L"
-NUDGE = 1.3
+NUDGE = 1.2
 ANTINUDGE = 0.4
 ANTINDUGE_THRESH = 0.04
 REPETITION_LIMIT = 4
@@ -49,7 +49,7 @@ def govern(target_latency: float, target_fps: float):
         # process.stdin.write("echo hi\n")
         # process.stdin.flush()
         # print(process.stdout.readline().strip())
-        process.stdin.write(f"./graph_alexnet_all_pipe_sync --threads=4  --threads2=2 --n=20 --total_cores=6 --partition_point={pp1} --partition_point2={pp2} --order={ORDER} &> output.txt\n")
+        process.stdin.write(f"./graph_alexnet_all_pipe_sync --threads=4  --threads2=2 --n=40 --total_cores=6 --partition_point={pp1} --partition_point2={pp2} --order={ORDER} &> output.txt\n")
         process.stdin.write(f"./parse_perf\n")
         process.stdin.flush()
 

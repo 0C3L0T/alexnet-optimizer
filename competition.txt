@@ -1,0 +1,39 @@
+dante@sp-byods-145-109-44-151 governor_model % time python3 governor.py 140 12
+target latency: 140.0
+target fps: 12.0
+in initialize dup check
+new most fit individual: L1:2, L2:6, L3:0, bigFreqLv:3, littleFreqLv:8 fitness=254.17, est_lat=125.05, est_fps=13.31, est_pwr=3.934 W (0.7869 A)
+new most fit individual: L1:1, L2:7, L3:0, bigFreqLv:8, littleFreqLv:3 fitness=275.90, est_lat=98.39, est_fps=12.04, est_pwr=3.624 W (0.7249 A)
+new most fit individual: L1:1, L2:7, L3:0, bigFreqLv:7, littleFreqLv:3 fitness=281.87, est_lat=99.00, est_fps=12.02, est_pwr=3.548 W (0.7095 A)
+new most fit individual: L1:1, L2:7, L3:0, bigFreqLv:7, littleFreqLv:4 fitness=281.88, est_lat=99.00, est_fps=12.02, est_pwr=3.548 W (0.7095 A)
+new most fit individual: L1:1, L2:7, L3:0, bigFreqLv:7, littleFreqLv:5 fitness=281.89, est_lat=99.00, est_fps=12.02, est_pwr=3.548 W (0.7095 A)
+generation: 10
+new most fit individual: L1:1, L2:7, L3:0, bigFreqLv:7, littleFreqLv:7 fitness=281.89, est_lat=99.00, est_fps=12.02, est_pwr=3.547 W (0.7095 A)
+new most fit individual: L1:1, L2:7, L3:0, bigFreqLv:7, littleFreqLv:8 fitness=281.89, est_lat=99.00, est_fps=12.02, est_pwr=3.547 W (0.7095 A)
+generation: 20
+generation: 30
+generation: 40
+generation: 50
+staleness limit reached
+
+Trying configuration:
+pp1:1, pp2:8, Big frequency:1704000, Small frequency:1800000
+
+output is: fps:11.854500, latency:100.188004,
+Configuration failed to reach FPS target.
+
+target latency: 153.6847984
+target fps: 12.1746
+new most fit individual: L1:2, L2:6, L3:0, bigFreqLv:3, littleFreqLv:8 fitness=254.17, est_lat=125.05, est_fps=13.31, est_pwr=3.934 W (0.7869 A)
+generation: 10
+generation: 20
+generation: 30
+generation: 40
+staleness limit reached
+
+Trying configuration:
+pp1:2, pp2:8, Big frequency:1200000, Small frequency:1800000
+
+output is: fps:13.193900, latency:129.815994,
+Solution found.
+python3 governor.py 140 12  3.73s user 0.42s system 13% cpu 31.296 total

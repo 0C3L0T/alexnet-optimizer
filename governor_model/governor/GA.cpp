@@ -442,6 +442,7 @@ chromosome genetic_algorithm(int population_size,  // HAS TO BE EVEN
     chromosome* population = (chromosome*) malloc(sizeof(chromosome) * population_size);
     vector<chromosome> parents;
 
+    srand(time(NULL));
     double inv_fps = 1000/target_fps;
 
     string param_files[] = {

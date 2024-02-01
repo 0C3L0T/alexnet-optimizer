@@ -89,10 +89,10 @@ void predict_performance(chromosome* chromosome_, matrix* params,
     inputs_g.data[0][7] = GHZ/bfreq;
     inputs_l.data[0][7] = GHZ/lfreq;
 
-    cout << "bfreq: " << bfreq << endl;
-    for (int i = 0; i < 8; i++) {
-        cout << "input b no: " << i << ": " << inputs_b.data[0][i] << endl;
-    }
+    // cout << "bfreq: " << bfreq << endl;
+    // for (int i = 0; i < 8; i++) {
+    //     cout << "input b no: " << i << ": " << inputs_b.data[0][i] << endl;
+    // }
     /* Run models. */
     double inf_lat1 = model(inputs_b, &params[0]);
     double inf_lat2 = model(inputs_g, &params[4]);
