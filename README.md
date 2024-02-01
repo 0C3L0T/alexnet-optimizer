@@ -12,6 +12,8 @@ To run the governor:
 ```
 
 To compile and push the C version (with broken performance predictor) to the board:
-```../build *.cpp && ../../push governor```
+```
+../build *.cpp && ../../push governor
+```
 
 Running it without arguments prints usage.
