@@ -1,4 +1,9 @@
-# To run
+# Alexnet optimizer
+This repository contains the code used to predict the optimal power governor and pipline configuration for inference of the Alexnet model on an edge device.
+Under the hood, this optimization engine uses a genetic algorithm which utilizes two distinct neural networks as a fitness score in rating possible configurations
+
+
+## To run
 
 First of all, apologies for the messy directory structure.
 
